@@ -22,7 +22,7 @@ var courtWindow = null;
 var publishWindow = null;
 
 // Handle Squirrel Events
-if (require('electron-squirrel-startup')) {
+/*if (require('electron-squirrel-startup')) {
   return;
 }
 
@@ -93,6 +93,7 @@ function handleSquirrelEvent() {
       return true;
   }
 };
+*/
 
 // Get the network config file
 var getNetworkConfig =  function () {
@@ -218,7 +219,7 @@ app.on('ready', function() {
     });
 
     // Open the DevTools.
-    // controllerWindow.webContents.openDevTools();
+    controllerWindow.webContents.openDevTools();
   };
 
   var createPublishWindow = function() {

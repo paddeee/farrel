@@ -35,7 +35,7 @@ var electronInstaller = require('electron-winstaller');
 var exec = require('child_process').exec;
 
 const buildVersion = '0.9.4';
-const electronVersion = '1.2.8';
+const electronVersion = '1.3.5';
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',
@@ -371,7 +371,7 @@ gulp.task('packager:osxpackagecreator', function () {
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': true,
+    'asar': false,
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFonline.ico.icns',
