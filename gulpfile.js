@@ -35,7 +35,7 @@ var electronInstaller = require('electron-winstaller');
 var exec = require('child_process').exec;
 
 const buildVersion = '0.9.4';
-const electronVersion = '1.2.8';
+const electronVersion = '1.3.5';
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',

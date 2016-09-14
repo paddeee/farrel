@@ -201,9 +201,14 @@ module.exports = Reflux.createStore({
   },
 
   // Create a regular expression for a loki transform query based on the passed in field filters
+  // Based on CaseMap rules of grouping together Previous query and adding latest one
   getRegexFilterQuery: function(fieldGroupArray) {
 
     // Murder                                                 ^(.*Murder)
+    // Murder AND PersonA:                                    ^(.*Murder)(?=.*PersonA)
+    // Murder AND PersonA OR Kidnapping                       ^((.*Murder)(?=.*PersonA))|(.*Kidnapping)
+    // Murder AND PersonA OR Kidnapping AND PersonB           ^((.*Murder)(?=.*PersonA)|(.*Kidnapping))(?=.*PersonB)
+    // Murder AND PersonA AND PersonB OR Kidnapping           ^((.*Murder)(?=.*PersonA)(?=.*PersonB))|(.*Kidnapping)
     // NOT PersonA:                                           ^(?!.*PersonA)(.*)
     // Murder AND NOT PersonA:                                ^(?!.*PersonA)(.*Murder)
     // Murder OR Kidnapping AND NOT PersonA                   ^(?!.*PersonA)((.*Murder)|(.*Kidnapping))
