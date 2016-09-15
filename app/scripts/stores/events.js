@@ -67,6 +67,7 @@ module.exports = Reflux.createStore({
   filterStateChanged: function(filterTransformBroadcast) {
 
     this.setDatesTransform();
+    this.setParams();
 
     this.createFilterTransform(filterTransformBroadcast);
   },
@@ -165,7 +166,8 @@ module.exports = Reflux.createStore({
     this.filterTransform = {};
 
     this.filterTransform[this.collectionName] = {
-      filters: [{
+      filters: [
+       {
         type: 'find',
         value: {
           '$and': [ {
@@ -177,7 +179,11 @@ module.exports = Reflux.createStore({
       },
       {
         type: 'where',
-        value: '[%lktxp]filterDates'
+        value: '[%lktxp]filterQueries'
+      },
+      {
+      type: 'where',
+      value: '[%lktxp]filterDates'
       }],
       sorting: {
         type: 'simplesort',
@@ -191,6 +197,7 @@ module.exports = Reflux.createStore({
     };
 
     this.setDatesTransform();
+    this.setParams();
 
     if (!this.dataSource) {
       return;
@@ -222,9 +229,39 @@ module.exports = Reflux.createStore({
     }.bind(this));
 
     // Transform Params to be used in collection chain transforms
+    this.setParams();
+  },
+
+  // Set up params for transform
+  setParams: function() {
+
+    // Transform Params to be used in collection chain transforms
     this.params = {
+      filterQueries: this.filterQueries,
       filterDates: this.filterDates
     };
+  },
+
+  // Create a loki 'where' query based on filters selected by user
+  filterQueries: function(obj) {
+
+    /*
+     (If Full name contains kosovo AND Type is category1) -                         (obj['Full Name'].match(/^(.*kosovo)/i)) && obj.Type.match(/^(.*\bcategory1\b)/i)
+     (If Full name contains kosovo AND Type is category1) OR Type is category2      (obj['Full Name'].match(/^(.*kosovo)/i) && obj.Type.match(/^(.*\bcategory1\b)/i)) || obj.Type.match(/^(.*\bcategory2\b)/i)
+    */
+
+    var OR = '||';
+    var AND = '&&';
+    var filter1 = !!obj['Full Name'].match(/^(.*kosovo)/i);
+    var filter2 = !!obj.Type.match(/^(.*\bcategory1\b)/i);
+    var filter3 = !!obj.Type.match(/^(.*\bcategory2\b)/i);
+    var filter4 = !!obj['Full Name'].match(/^(.*kill)/i);
+
+    if (eval((filter1 + AND + filter2 + OR + filter3) + AND + filter4)) {
+      return true;
+    }
+
+    return false;
   },
 
   // Used by the lokijs 'where' query to filter on dates in a transform
