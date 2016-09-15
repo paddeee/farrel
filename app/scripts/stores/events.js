@@ -190,6 +190,7 @@ module.exports = Reflux.createStore({
         property: '$loki',
         desc: true
       },
+      filterQueries: [],
       dateQueries: {
         from: [],
         to: []
@@ -245,19 +246,28 @@ module.exports = Reflux.createStore({
   // Create a loki 'where' query based on filters selected by user
   filterQueries: function(obj) {
 
-    /*
-     (If Full name contains kosovo AND Type is category1) -                         (obj['Full Name'].match(/^(.*kosovo)/i)) && obj.Type.match(/^(.*\bcategory1\b)/i)
-     (If Full name contains kosovo AND Type is category1) OR Type is category2      (obj['Full Name'].match(/^(.*kosovo)/i) && obj.Type.match(/^(.*\bcategory1\b)/i)) || obj.Type.match(/^(.*\bcategory2\b)/i)
-    */
+    var filterQueries = this.filterTransform[this.collectionName].filterQueries;
 
-    var OR = '||';
-    var AND = '&&';
-    var filter1 = !!obj['Full Name'].match(/^(.*kosovo)/i);
-    var filter2 = !!obj.Type.match(/^(.*\bcategory1\b)/i);
-    var filter3 = !!obj.Type.match(/^(.*\bcategory2\b)/i);
-    var filter4 = !!obj['Full Name'].match(/^(.*kill)/i);
+    var queryConditions = '';
+    var queryOperator = '';
 
-    if (eval((filter1 + AND + filter2 + OR + filter3) + AND + filter4)) {
+    filterQueries.forEach(function(filterQuery, index) {
+      console.log('Filter Queries Length: ' + filterQueries.length);
+      console.log(filterQuery.fieldName);
+      console.log(filterQuery.$regex);
+
+      if (index > 0) {
+        queryOperator = '||';
+      }
+
+      queryConditions = queryConditions + queryOperator + !!obj[filterQuery.fieldName].match(filterQuery.$regex);
+    });
+
+    console.log(queryConditions);
+
+    // ToDo: Eval is evil and all that. However, I don't know of a better way to dynamically create an if statement.
+    // Change if there is a way to do this without eval.
+    if (eval(queryConditions)) {
       return true;
     }
 
