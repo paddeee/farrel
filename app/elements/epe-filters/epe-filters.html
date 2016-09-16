@@ -132,6 +132,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     .filters__no-filters {
       font-size: 16px;
+      text-align: center;
     }
 
     .add-filter-dialog {
@@ -179,7 +180,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       font-style: italic;
     }
 
-    .remove-filter-container {
+    .filter-container-icons {
       position: absolute;
       top: 0;
       right: 0;
@@ -336,12 +337,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <span>field</span>
                 </div>
 
-                <div class="remove-filter-container">
-                  <paper-icon-button class="remove-filter"
+                <div class="filter-container-icons layout horizontal">
+                  <paper-icon-button id="EditFilter"
+                                     class="edit-filter"
+                                     icon="create"
+                                     on-tap="editFilter"
+                                     data-index$="[[index]]"></paper-icon-button>
+                  <paper-icon-button id="RemoveFilter"
+                                     class="remove-filter"
                                      icon="remove-circle"
                                      on-tap="removeFilter"
                                      data-index$="[[index]]"></paper-icon-button>
-                  <paper-tooltip position="top">
+                  <paper-tooltip for="EditFilter" position="top">
+                    Edit Filter
+                  </paper-tooltip>
+                  <paper-tooltip for="RemoveFilter" position="top">
                     Remove Filter
                   </paper-tooltip>
                 </div>
@@ -394,9 +404,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                              error-message="Please select a field to search on."
                              on-iron-select="fieldSelected">
           <paper-listbox id="AddFieldList"
+                         attr-for-selected="name"
                          class="dropdown-content">
             <template id="AddFieldTemplate" is="dom-repeat" items="[[fields]]">
-              <paper-item value$="[[item]]" type$="[[item.filter]]">[[getHeadingName(item.name)]]</paper-item>
+              <paper-item value$="[[item]]"
+                          type$="[[item.filter]]"
+                          name$="[[getHeadingName(item.name)]]">[[getHeadingName(item.name)]]</paper-item>
             </template>
           </paper-listbox>
         </paper-dropdown-menu>
@@ -438,7 +451,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="buttons">
         <paper-button dialog-dismiss
                       on-tap="addFilterCancelled">Cancel</paper-button>
-        <paper-button on-tap="filterAdded">Add Filter</paper-button>
+        <paper-button on-tap="filterAdded" hidden$="[[editingFilter]]">Add Filter</paper-button>
+        <paper-button on-tap="filterEdited" hidden$="[[!editingFilter]]">Edit Filter</paper-button>
       </div>
     </paper-dialog>
 
@@ -527,6 +541,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         andOrNotSelectedValue: {
           type: String,
           value: 'and'
+        },
+
+        editingFilter: {
+          type: Boolean,
+          value: false
         },
 
         animationConfig: {
@@ -672,14 +691,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Add filter button tapped
       addFilter: function() {
+        this.editingFilter = false;
+        this.andOrNotSelectedValue = 'and';
+        this.$.AddFilterDialog.open();
+      },
+
+      // Edit an existing Filter Item
+      editFilter: function(event) {
+        this.editingFilter = true;
+
+        // Set field Value
+        this.$.AddFieldList.select(this.getHeadingName(event.model.item.fieldName));
+
+        // Set AND/OR/NOT value
+
+
+
         this.$.AddFilterDialog.open();
       },
 
       // Select Field dropdown changed
       fieldSelected: function(event) {
 
+        var type = event.target.selectedItem.getAttribute('type');
+
         // If a Date/Time field
-        if (event.target.selectedItem.getAttribute('type') === 'gte' || event.target.selectedItem.getAttribute('type') === 'lte') {
+        if (type === 'gte' || type === 'lte') {
           this.disableFilterButtons(true);
           this.hideDateTimeSelection(false);
         // If Text/Dropdown field
@@ -751,6 +788,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.addFilterCancelled();
 
           this.queryBuilderActions.queryFiltersChanged(filterObject, 'add');
+        }
+      },
+
+      // Edit a filter and pass filters Object via 'queryFiltersChanged' action
+      filterEdited: function() {
+
+        // If filter to be added is valid
+        if (this.filterValidate()) {
+
+          var item = JSON.parse(this.$.AddFieldList.selectedItem.getAttribute('value'));
+
+          var filterObject = {
+            collectionName: app.config.EventsCollection.name,
+            fieldName: item.name,
+            filter: item.filter,
+            filterValues: item.filterValues,
+            includeExclude: this.$.IncludeExclude.selected,
+            andOrNot: this.andOrNotSelectedValue,
+            value: ''
+          };
+
+          this.$.AddFilterDialog.close();
+
+          this.addFilterCancelled();
+
+          this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
         }
       },
 
