@@ -251,7 +251,12 @@ module.exports = Reflux.createStore({
       console.log(filterQuery.$regex);
 
       if (index > 0) {
-        queryOperator = '||';
+
+        if (filterQuery.andOrNot === 'and' || filterQuery.andOrNot === 'not') {
+          queryOperator = '&&';
+        } else if (filterQuery.andOrNot === 'or') {
+          queryOperator = '||';
+        }
       }
 
       queryConditions = queryConditions + queryOperator + !!obj[filterQuery.fieldName].match(filterQuery.$regex);
