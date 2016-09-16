@@ -136,6 +136,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     .add-filter-dialog {
       overflow: visible;
+      min-width: 380px;
+    }
+
+    .add-filter-dialog__container {
+      margin: 0;
     }
 
     paper-dialog paper-button {
@@ -147,7 +152,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     .filter-type,
-    .include-exclude {
+    .filter-type__include-exclude {
       display: none;
     }
 
@@ -222,6 +227,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       z-index: 10;
     }
 
+    .include-exclude--hidden {
+      visibility: hidden;
+    }
+
+    .and-or-not {
+      margin: 20px 0 0;
+    }
+
+    .and-or-not__button-holder {
+      margin: 0 0 12px 0;
+    }
+
+    .and-or-not paper-button {
+      color: var(--primary-text-color);
+      font-weight: bold;
+      margin: 0 8px 0 0;
+    }
+
+    .and-or-not span {
+      font-style: italic;
+    }
+
+    .and-or-not paper-button[active] {
+      background-color: rgb(0, 158, 194);
+      color: var(--text-primary-color);
+      font-weight: normal;
+    }
+
   </style>
   <template>
 
@@ -238,13 +271,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <div class="filters-main">
 
-        <!--<div class="filters__global-search">
+        <div class="filters__global-search">
           <paper-input id="GlobalSearch"
                        type="search"
-                       label="Global search"
+                       label="Search in all Event fields"
                        value="[[globalSearchValue]]">
           </paper-input>
-        </div>-->
+        </div>
 
         <div class="filters__custom-search layout vertical center-justified">
           <h1 class="self-center">Custom Filters</h1>
@@ -296,13 +329,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 <div class="filter-info">
                   <span showing$="[[showIncludeExcludeFilter('include',item.includeExclude)]]"
-                        class="include-exclude">In </span>
+                        class="filter-type__include-exclude">In </span>
                   <span showing$="[[showIncludeExcludeFilter('exclude',item.includeExclude)]]"
-                        class="include-exclude">Not in </span>
+                        class="filter-type__include-exclude">Not in </span>
                   <span class="include-exclude-data-type">[[getHeadingName(item.fieldName)]]</span>
-                  <span>field of </span>
-                  <span class="include-exclude-data-type">[[item.collectionDisplayName]]</span>
-                  <span> table.</span>
+                  <span>field</span>
                 </div>
 
                 <div class="remove-filter-container">
@@ -356,36 +387,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-dialog id="AddFilterDialog" class="add-filter-dialog" modal>
       <h2>Add filter</h2>
 
-        <div class="layout vertical">
-
-        <!-- Data Type -->
-        <paper-dropdown-menu id="AddFilterDataType"
-                             label="Search on.."
-                             error-message="Please select a data type to search on.">
-          <paper-listbox id="AddFilterDataTypeList"
-                         class="dropdown-content"
-                         on-iron-select="dataTypeSelected">
-            <paper-item value$="[[eventsName]]">Events</paper-item>
-            <paper-item value$="[[placesName]]">Places</paper-item>
-            <paper-item value$="[[peopleName]]">People</paper-item>
-            <paper-item value$="[[sourcesName]]">Source Material</paper-item>
-          </paper-listbox>
-        </paper-dropdown-menu>
+        <div class="layout vertical add-filter-dialog__container">
 
         <paper-dropdown-menu id="AddField"
-                             label="in field.."
+                             label="on field.."
                              error-message="Please select a field to search on."
-                             disabled
                              on-iron-select="fieldSelected">
           <paper-listbox id="AddFieldList"
                          class="dropdown-content">
             <template id="AddFieldTemplate" is="dom-repeat" items="[[fields]]">
-              <paper-item value$="[[item]]">[[getHeadingName(item.name)]]</paper-item>
+              <paper-item value$="[[item]]" type$="[[item.filter]]">[[getHeadingName(item.name)]]</paper-item>
             </template>
           </paper-listbox>
         </paper-dropdown-menu>
 
-        <paper-radio-group id="IncludeExclude" selected="include">
+          <div id="AndOrNot" class="and-or-not layout vertical">
+            <div class="and-or-not__button-holder">
+              <paper-button id="And"
+                            class="and-or-not__button"
+                            on-tap="andOrNotSelected"
+                            and-or-not="and"
+                            active
+                            raised>AND</paper-button>
+              <span>Add them together so I see all answers</span>
+            </div>
+            <div class="and-or-not__button-holder">
+              <paper-button id="Or"
+                            class="and-or-not__button"
+                            on-tap="andOrNotSelected"
+                            and-or-not="or"
+                            raised>OR</paper-button>
+              <span>Show me only the common elements of both</span>
+            </div>
+            <div class="and-or-not__button-holder">
+              <paper-button id="Not"
+                            class="and-or-not__button"
+                            on-tap="andOrNotSelected"
+                            and-or-not="not"
+                            raised>NOT</paper-button>
+              <span>Exclude from the results</span>
+            </div>
+          </div>
+
+        <paper-radio-group id="IncludeExclude" selected="include" class="include-exclude  include-exclude--hidden">
           <paper-radio-button name="include">Include in search</paper-radio-button>
           <paper-radio-button name="exclude">Exclude from search</paper-radio-button>
         </paper-radio-group>
@@ -480,6 +524,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: true
         },
 
+        andOrNotSelectedValue: {
+          type: String,
+          value: 'and'
+        },
+
         animationConfig: {
           value: function() {
             return {
@@ -526,6 +575,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.placesName = this.config.PlacesCollection.name;
               this.peopleName = this.config.PeopleCollection.name;
               this.sourcesName = this.config.SourcesCollection.name;
+
+              this.selectedDataType = this.eventsName;
+              this.fields = this.config.EventsCollection.fields.filter(function(item) {
+                return item.display === 'true';
+              });
             }
           }.bind(this));
 
@@ -538,6 +592,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.placesName = this.config.PlacesCollection.name;
           this.peopleName = this.config.PeopleCollection.name;
           this.sourcesName = this.config.SourcesCollection.name;
+
+          this.selectedDataType = this.eventsName;
+          this.fields = this.config.EventsCollection.fields.filter(function(item) {
+            return item.display === 'true';
+          });
         }
 
         if (this.queryBuilderStore) {
@@ -616,48 +675,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.AddFilterDialog.open();
       },
 
-      // Select Data Type dropdown changed
-      dataTypeSelected: function(event) {
+      // Select Field dropdown changed
+      fieldSelected: function(event) {
 
-        this.$.AddFilterDataType.invalid = false;
-
-        this.deselectField(this.$.AddFieldList);
-
-        switch (event.detail.item.getAttribute('value')) {
-          case this.eventsName:
-            this.selectedDataType = this.eventsName;
-            this.fields = this.config.EventsCollection.fields.filter(function(item) {
-              return item.display === 'true';
-            });
-            break;
-          case this.placesName:
-            this.selectedDataType = this.placesName;
-            this.fields = this.config.PlacesCollection.fields.filter(function(item) {
-              return item.display === 'true';
-            });
-            break;
-          case this.peopleName:
-            this.selectedDataType = this.peopleName;
-            this.fields = this.config.PeopleCollection.fields.filter(function(item) {
-              return item.display === 'true';
-            });
-            break;
-          case this.sourcesName:
-            this.selectedDataType = this.sourcesName;
-            this.fields = this.config.SourcesCollection.fields.filter(function(item) {
-              return item.display === 'true';
-            });
-            break;
-          default:
-            console.error('InnerText of selected item does not match any of these cases');
+        // If a Date/Time field
+        if (event.target.selectedItem.getAttribute('type') === 'gte' || event.target.selectedItem.getAttribute('type') === 'lte') {
+          this.disableFilterButtons(true);
+          this.hideDateTimeSelection(false);
+        // If Text/Dropdown field
+        } else {
+          this.disableFilterButtons(false);
+          this.hideDateTimeSelection(true);
         }
-
-        this.$.AddField.disabled = false;
+        this.$.AddField.invalid = false;
       },
 
-      // Select Field dropdown changed
-      fieldSelected: function() {
-        this.$.AddField.invalid = false;
+      // Show/Hide Date/Time before/after radiobuttons
+      hideDateTimeSelection: function(hide) {
+
+        if (hide) {
+          this.$.IncludeExclude.classList.add('include-exclude--hidden');
+        } else {
+          this.$.IncludeExclude.classList.remove('include-exclude--hidden');
+        }
       },
 
       // Deselect selected item in field dropdown
@@ -667,10 +707,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Reset Add filter Dialog form
       addFilterCancelled: function() {
-        this.deselectField(this.$.AddFilterDataTypeList);
         this.deselectField(this.$.AddFieldList);
         this.$.IncludeExclude.selected = 'include';
-        this.$.AddField.disabled = true;
+        this.setDefaultAndButton();
+        this.hideDateTimeSelection(true);
       },
 
       // Check filter to be added is valid
@@ -678,15 +718,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var valid = true;
 
-        // If no data type has been selected
-        if (!this.$.AddFilterDataTypeList.selectedItem) {
-          valid = false;
-          this.invalidFilterMessage = 'Please select a data type to search on.';
-          this.$.AddFilterDataType.invalid = true;
-        }
-
         // If no data field has been selected
-        else if (!this.$.AddFieldList.selectedItem) {
+        if (!this.$.AddFieldList.selectedItem) {
           valid = false;
           this.invalidFilterMessage = 'Please select a field to search on.';
           this.$.AddField.invalid = true;
@@ -704,12 +737,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var item = JSON.parse(this.$.AddFieldList.selectedItem.getAttribute('value'));
 
           var filterObject = {
-            collectionName: this.$.AddFilterDataTypeList.selectedItem.getAttribute('value'),
-            collectionDisplayName: this.$.AddFilterDataTypeList.selectedItem.innerText.trim(),
+            collectionName: app.config.EventsCollection.name,
             fieldName: item.name,
             filter: item.filter,
             filterValues: item.filterValues,
             includeExclude: this.$.IncludeExclude.selected,
+            andOrNot: this.andOrNotSelectedValue,
             value: ''
           };
 
@@ -921,6 +954,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Fire event that we are syncing DB
       syncingDB: function() {
         this.fire('syncing-db');
+      },
+
+      // When User selects whether filter is AND, OR or NOT
+      andOrNotSelected: function(event) {
+
+        var $andOrNotButtons = this.$.AndOrNot.querySelectorAll('.and-or-not__button');
+
+        $andOrNotButtons.forEach(function($button) {
+          $button.active = false;
+        });
+
+        this.andOrNotSelected = event.target.getAttribute('and-or-not');
+        event.target.active = true;
+      },
+
+      // Enable/Disable the AND/OR/NOT buttons
+      disableFilterButtons: function(disable) {
+
+        var $andOrNotButtons = this.$.AndOrNot.querySelectorAll('.and-or-not__button');
+
+        if (disable) {
+          $andOrNotButtons.forEach(function($button) {
+            $button.disabled = true;
+            $button.active = false;
+          });
+        } else {
+          this.setDefaultAndButton();
+        }
+      },
+
+      // Set default AND Button
+      setDefaultAndButton: function($andOrNotButtons) {
+
+        var $andOrNotButtons = this.$.AndOrNot.querySelectorAll('.and-or-not__button');
+
+        $andOrNotButtons.forEach(function($button) {
+          $button.disabled = false;
+          $button.active = false;
+        });
+
+        // Default back to And being selected
+        this.$.And.active = true;
       }
     });
   })();
