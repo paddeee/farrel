@@ -167,16 +167,6 @@ module.exports = Reflux.createStore({
 
     this.filterTransform[this.collectionName] = {
       filters: [
-       {
-        type: 'find',
-        value: {
-          '$and': [ {
-            'Full Name': {
-              '$regex': ['', 'i']
-            }
-          }]
-        }
-      },
       {
         type: 'where',
         value: '[%lktxp]filterQueries'
@@ -246,13 +236,17 @@ module.exports = Reflux.createStore({
   // Create a loki 'where' query based on filters selected by user
   filterQueries: function(obj) {
 
-    var filterQueries = this.filterTransform[this.collectionName].filterQueries;
-
+    var filterQueriesArray = this.filterTransform[this.collectionName].filterQueries;
     var queryConditions = '';
     var queryOperator = '';
 
-    filterQueries.forEach(function(filterQuery, index) {
-      console.log('Filter Queries Length: ' + filterQueries.length);
+    // If no filters
+    if (!filterQueriesArray.length) {
+      return true;
+    }
+
+    filterQueriesArray.forEach(function(filterQuery, index) {
+      console.log('Filter Queries Length: ' + filterQueriesArray.length);
       console.log(filterQuery.fieldName);
       console.log(filterQuery.$regex);
 

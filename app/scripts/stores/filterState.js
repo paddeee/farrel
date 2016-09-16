@@ -128,9 +128,17 @@ module.exports = Reflux.createStore({
 
       // Perform partial search on text input and full word search on select drop down
       if (field.filter === 'regex') {
-        field.$regex = new RegExp('^(.*' + field.value + ')', 'i');
+        if (field.andOrNot === 'and' || field.andOrNot === 'or') {
+          field.$regex = new RegExp('^(.*' + field.value + ')', 'i');
+        } else if (field.andOrNot === 'not') {
+          field.$regex = new RegExp('^(?!.*' + field.value + ')', 'i');
+        }
       } else if (field.filter === 'select') {
-        field.$regex = new RegExp('^(.*\\b' + field.value + '\\b)', 'i');
+        if (field.andOrNot === 'and' || field.andOrNot === 'or') {
+          field.$regex = new RegExp('^(.*\\b' + field.value + '\\b)', 'i');
+        } else if (field.andOrNot === 'not') {
+          field.$regex = new RegExp('^(?!.*\\b' + field.value + '\\b)', 'i');
+        }
       }
 
       transformObject.filterQueries.push(field);
