@@ -152,14 +152,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       margin: 3vh 0 0;
     }
 
-    .filter-type,
     .filter-type__include-exclude {
       display: none;
     }
 
-    .filter-type[showing] {
-      display: block;
-      margin: 0 0 1vh;
+    .filter-type--date-time-picker {
+      margin: 16px 0 0;
+    }
+
+    .field-value-inputs {
+      height: 66px;
+      width: 100%;
     }
 
     .include-exclude[showing] {
@@ -167,13 +170,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     paper-material {
-      margin: 1vh 0 2vh;
       padding: 2vh 2vw;
       background: var(--primary-background-color);
     }
 
     .filter-info {
       font-size: 14px;
+      margin: 30px 0 0;
+      border-top: 1px solid grey;
+      padding: 8px 0 0;
     }
 
     .include-exclude-data-type {
@@ -256,6 +261,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       font-weight: normal;
     }
 
+    .filters__custom-container--main {
+      padding: 16px;
+      background: #616161;
+      border-radius: 16px;
+    }
+
   </style>
   <template>
 
@@ -282,57 +293,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <div class="filters__custom-search layout vertical center-justified">
           <h1 class="self-center">Custom Filters</h1>
-          <div class="filters__custom-container"
+
+          <div class="filters__custom-container  filters__custom-container--main"
             hidden$="[[hideCustomFilters]]">
-            <template id="FiltersTemplate" is="dom-repeat" items="[[customFilters]]">
+            <template id="FiltersTemplate"
+                      is="dom-repeat"
+                      items="[[customFilters]]">
 
               <paper-material class="filter-item">
 
-                <!-- Input -->
-                <div class="filter-type  filter-type--input"
-                  showing$="[[showFilterType('regex',item.filter)]]">
-                  <paper-input type="search"
-                               label="[[getHeadingName(item.fieldName, 'true')]]"
-                               value="[[item.value]]"
-                               on-keyup="userInputChanged"
-                               on-search="userInputChanged">
-                  </paper-input>
-                </div>
-
-                <!-- Select -->
-                <paper-dropdown-menu class="filter-type  filter-type--select"
-                                     label="[[item.fieldName]]"
-                                     showing$="[[showFilterType('select',item.filter)]]">
-                  <paper-listbox class="dropdown-content"
-                                 attr-for-selected="value"
-                                 selected="[[item.value]]"
-                                 on-iron-select="userSelectChanged">
-                    <paper-item value="">Select&nbsp;<span> [[item.fieldName]]</span></paper-item>
-                    <template id="FilterValuesTemplate"
-                              is="dom-repeat"
-                              items="[[item.filterValues]]"
-                              as="filterValue">
-                      <paper-item value$="[[filterValue]]">[[filterValue]]</paper-item>
-                    </template>
-                  </paper-listbox>
-                </paper-dropdown-menu>
-
-                <!-- DateTime -->
-                <epe-date-time-picker
-                  class="filter-type filter-type--date-time-picker"
-                  id="[[item.fieldName]]"
-                  label="[[item.fieldName]]"
-                  query-type="[[[item.filter]]"
-                  date="[[getFilterDate(item.value)]]"
-                  time="[[getFilterTime(item.value)]]"
-                  showing$="[[showFilterType('date',item.filter)]]"
-                  on-user-entered-date-time="userDateChanged"></epe-date-time-picker>
-
                 <div class="filter-info">
-                  <span showing$="[[showIncludeExcludeFilter('include',item.includeExclude)]]"
-                        class="filter-type__include-exclude">In </span>
-                  <span showing$="[[showIncludeExcludeFilter('exclude',item.includeExclude)]]"
-                        class="filter-type__include-exclude">Not in </span>
+                  <span>"[[item.value]]"</span>
+                  <span >in </span>
                   <span class="include-exclude-data-type">[[getHeadingName(item.fieldName)]]</span>
                   <span>field</span>
                 </div>
@@ -359,9 +331,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
           </div>
 
+          <div class="filters__custom-container  filters__custom-container--last"
+               hidden$="[[!lastFilter]]">
+
+            <paper-material class="filter-item">
+
+              <div class="filter-info">
+                <span>"[[lastFilter.value]]"</span>
+                <span >in </span>
+                <span class="include-exclude-data-type">[[getHeadingName(lastFilter.fieldName)]]</span>
+                <span>field</span>
+              </div>
+
+              <div class="filter-container-icons layout horizontal">
+                <paper-icon-button id="EditFilter"
+                                   class="edit-filter"
+                                   icon="create"
+                                   on-tap="editFilter"
+                                   data-index$="[[index]]"></paper-icon-button>
+                <paper-icon-button id="RemoveFilter"
+                                   class="remove-filter"
+                                   icon="remove-circle"
+                                   on-tap="removeFilter"
+                                   data-index$="[[index]]"></paper-icon-button>
+                <paper-tooltip for="EditFilter" position="top">
+                  Edit Filter
+                </paper-tooltip>
+                <paper-tooltip for="RemoveFilter" position="top">
+                  Remove Filter
+                </paper-tooltip>
+              </div>
+            </paper-material>
+          </div>
+
           <!-- No filters message -->
           <div class="filters__no-filters"
-               hidden$="[[!hideCustomFilters]]">
+               hidden$="[[hideNoFiltersPlaceholder]]">
             Press the add button above to add a custom filter.
           </div>
         </div>
@@ -402,7 +407,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-dropdown-menu id="AddField"
                              label="on field.."
                              error-message="Please select a field to search on."
-                             on-iron-select="fieldSelected">
+                             on-iron-select="fieldSelected"
+                             disabled$="[[editingFilter]]">
           <paper-listbox id="AddFieldList"
                          attr-for-selected="name"
                          class="dropdown-content">
@@ -414,33 +420,87 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </paper-listbox>
         </paper-dropdown-menu>
 
-          <div id="AndOrNot" class="and-or-not layout vertical">
-            <div class="and-or-not__button-holder">
-              <paper-button id="And"
-                            class="and-or-not__button"
-                            on-tap="andOrNotSelected"
-                            and-or-not="and"
-                            active
-                            raised>AND</paper-button>
-              <span>Add them together so I see all answers</span>
-            </div>
-            <div class="and-or-not__button-holder">
-              <paper-button id="Or"
-                            class="and-or-not__button"
-                            on-tap="andOrNotSelected"
-                            and-or-not="or"
-                            raised>OR</paper-button>
-              <span>Show me only the common elements of both</span>
-            </div>
-            <div class="and-or-not__button-holder">
-              <paper-button id="Not"
-                            class="and-or-not__button"
-                            on-tap="andOrNotSelected"
-                            and-or-not="not"
-                            raised>NOT</paper-button>
-              <span>Exclude from the results</span>
-            </div>
+        <div class="field-value-inputs layout horizontal center">
+
+          <!-- Placeholder Disabled Input for Presentational Purposes -->
+          <paper-input id="PlaceHolderFieldValueInput"
+                       class="flex"
+                       type="search"
+                       label="Enter Filter Value"
+                       value=""
+                       disabled>
+          </paper-input>
+
+          <!-- Input -->
+          <paper-input id="FieldValueInput"
+                       class="filter-type  filter-type--input flex"
+                       hidden="true"
+                       type="search"
+                       label="[[getHeadingName(selectedFieldFilterObject.name, 'true')]]"
+                       value="[[selectedFieldFilterObject.value]]">
+          </paper-input>
+
+          <!-- Select -->
+          <paper-dropdown-menu id="FieldValueSelect"
+                               class="filter-type  filter-type--select flex"
+                               hidden="true"
+                               label="Choose [[selectedFieldFilterObject.name]]">
+            <paper-listbox id="FieldValueListBox"
+                           class="dropdown-content"
+                           attr-for-selected="value"
+                           selected="[[selectedFieldFilterObject.value]]">
+              <paper-item value="">Select&nbsp;<span> [[selectedFieldFilterObject.fieldName]]</span></paper-item>
+              <template id="FilterValuesTemplate"
+                        is="dom-repeat"
+                        items="[[selectedFieldFilterObject.filterValues]]"
+                        as="filterValue">
+                <paper-item value$="[[filterValue]]">[[filterValue]]</paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+
+          <!-- DateTime -->
+          <epe-date-time-picker
+            id="FieldValueDatePicker"
+            class="filter-type filter-type--date-time-picker flex"
+            label="[[selectedFieldFilterObject.fieldName]]"
+            query-type="[[[selectedFieldFilterObject.filter]]"
+            date="[[getFilterDate(selectedFieldFilterObject.value)]]"
+            time="[[getFilterTime(selectedFieldFilterObject.value)]]"
+            hidden="true"
+            on-user-entered-date-time="userDateChanged"></epe-date-time-picker>
+
+        </div>
+
+        <div id="AndOrNot"
+             class="and-or-not layout vertical"
+             hidden$="[[hideAndOrNot]]">
+          <div class="and-or-not__button-holder">
+            <paper-button id="And"
+                          class="and-or-not__button"
+                          on-tap="andOrNotSelected"
+                          and-or-not="and"
+                          active
+                          raised>AND</paper-button>
+            <span>Add them together so I see all answers</span>
           </div>
+          <div class="and-or-not__button-holder">
+            <paper-button id="Or"
+                          class="and-or-not__button"
+                          on-tap="andOrNotSelected"
+                          and-or-not="or"
+                          raised>OR</paper-button>
+            <span>Show me only the common elements of both</span>
+          </div>
+          <div class="and-or-not__button-holder">
+            <paper-button id="Not"
+                          class="and-or-not__button"
+                          on-tap="andOrNotSelected"
+                          and-or-not="not"
+                          raised>NOT</paper-button>
+            <span>Exclude from the results</span>
+          </div>
+        </div>
 
         <paper-radio-group id="IncludeExclude" selected="include" class="include-exclude  include-exclude--hidden">
           <paper-radio-button name="include">Include in search</paper-radio-button>
@@ -510,7 +570,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Array
         },
 
+        lastFilter: {
+          type: Object,
+          value: null
+        },
+
         hideCustomFilters: {
+          type: Boolean,
+          value: true
+        },
+
+        hideNoFiltersPlaceholder: {
+          type: Boolean,
+          value: false
+        },
+
+        hideAndOrNot: {
           type: Boolean,
           value: true
         },
@@ -518,6 +593,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         fields: {
           type: Array,
           value: []
+        },
+
+        selectedFieldFilterObject: {
+          type: Object
         },
 
         invalidFilterMessage: {
@@ -630,9 +709,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
               this.customFilters = [];
 
-              queryBuilderStore.queryObject.filters.forEach(function(queryObject) {
-                this.push('customFilters', queryObject);
-              }.bind(this));
+              this.createFilterGroups(queryBuilderStore);
 
               // Decide whether to show No custom filters message
               this.showHideCustomFilters();
@@ -684,8 +761,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (this.customFilters && this.customFilters.length > 0) {
           this.hideCustomFilters = false;
+          this.hideNoFiltersPlaceholder = true;
         } else {
           this.hideCustomFilters = true;
+
+          if (this.lastFilter) {
+            this.hideNoFiltersPlaceholder = true;
+          } else {
+            this.hideNoFiltersPlaceholder = false;
+          }
         }
       },
 
@@ -694,16 +778,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.editingFilter = false;
         this.andOrNotSelectedValue = 'and';
         this.$.AddFilterDialog.open();
+
+        if (this.customFilters.length < 1) {
+          if (this.lastFilter) {
+            this.hideAndOrNot = false;
+          } else {
+            this.hideAndOrNot = true;
+          }
+        } else {
+          this.hideAndOrNot = false;
+        }
       },
 
       // Edit an existing Filter Item
       editFilter: function(event) {
+
         this.editingFilter = true;
+        var fieldItem;
+
+        if (event.model) {
+          fieldItem = event.model.item;
+        } else {
+          fieldItem = this.lastFilter;
+        }
 
         // Set field Value
-        this.$.AddFieldList.select(this.getHeadingName(event.model.item.fieldName));
+        this.$.AddFieldList.select(this.getHeadingName(fieldItem.fieldName));
+
+        // Set selectedFieldFilterObject
+        this.selectedFieldFilterObject = fieldItem;
 
         // Set AND/OR/NOT value
+        this.setAndOrNotButton(this.selectedFieldFilterObject.andOrNot);
+
+        // Show/Hide AND/OR/NOT
+        if (event.model && event.model.index === 0) {
+          this.hideAndOrNot = true;
+        } else {
+          if (this.customFilters.length) {
+            this.hideAndOrNot = false;
+          } else {
+            this.hideAndOrNot = true;
+          }
+        }
 
 
 
@@ -715,15 +832,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var type = event.target.selectedItem.getAttribute('type');
 
+        this.selectedFieldFilterObject = JSON.parse(event.target.selectedItem.getAttribute('value'));
+
+        this.$.PlaceHolderFieldValueInput.hidden = true;
+
+        // Hide all types of Filter Value fields
+        this.$.AddFilterDialog.querySelectorAll('.filter-type').forEach(function($filterType) {
+          $filterType.hidden = true;
+        });
+
         // If a Date/Time field
         if (type === 'gte' || type === 'lte') {
           this.disableFilterButtons(true);
           this.hideDateTimeSelection(false);
+          this.$.FieldValueDatePicker.hidden = false;
+
         // If Text/Dropdown field
         } else {
+
+          if (type === 'select') {
+            this.$.FieldValueSelect.hidden = false;
+            console.log(this.selectedFieldFilterObject);
+          } else if (type === 'regex') {
+            this.$.FieldValueInput.hidden = false;
+          }
+
           this.disableFilterButtons(false);
           this.hideDateTimeSelection(true);
         }
+
         this.$.AddField.invalid = false;
       },
 
@@ -746,7 +883,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       addFilterCancelled: function() {
         this.deselectField(this.$.AddFieldList);
         this.$.IncludeExclude.selected = 'include';
-        this.setDefaultAndButton();
+        this.setAndOrNotButton('and');
+
+        // Hide all types of Filter Value fields
+        this.$.AddFilterDialog.querySelectorAll('.filter-type').forEach(function($filterType) {
+          $filterType.hidden = true;
+        });
+
+        // Show Placeholder input again
+        this.$.PlaceHolderFieldValueInput.hidden = false;
+
         this.hideDateTimeSelection(true);
       },
 
@@ -780,7 +926,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             filterValues: item.filterValues,
             includeExclude: this.$.IncludeExclude.selected,
             andOrNot: this.andOrNotSelectedValue,
-            value: ''
+            value: this.getFilterValue(item)
           };
 
           this.$.AddFilterDialog.close();
@@ -799,15 +945,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           var item = JSON.parse(this.$.AddFieldList.selectedItem.getAttribute('value'));
 
-          var filterObject = {
-            collectionName: app.config.EventsCollection.name,
-            fieldName: item.name,
-            filter: item.filter,
-            filterValues: item.filterValues,
-            includeExclude: this.$.IncludeExclude.selected,
-            andOrNot: this.andOrNotSelectedValue,
-            value: ''
-          };
+          var filterObject = this.selectedFieldFilterObject;
+          filterObject.value = this.getFilterValue(item);
+          filterObject.andOrNot = this.andOrNotSelectedValue;
+          filterObject.includeExclude = this.$.IncludeExclude.selected;
 
           this.$.AddFilterDialog.close();
 
@@ -815,6 +956,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
         }
+      },
+
+      // Get a value of a filter from the relevany input type
+      getFilterValue: function(filterItem) {
+
+        var value = '';
+
+        if (filterItem.filter === 'regex') {
+          value = this.$.FieldValueInput.value;
+        } else if (filterItem.filter === 'select') {
+          value = this.$.FieldValueListBox.selected || '';
+        }
+
+        return value;
       },
 
       // CALLED IN TEMPLATE TO HIDE NON RELEVANT FILTER ELEMENTS
@@ -853,67 +1008,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Get date for date picker
       getFilterDate: function(value) {
-        if (value) {
-          return this.toArray(value)[0].value.split(' ')[0];
-        } else {
+
+        if (!value || value === '1900-01-01 00:00:00') {
           return '1900-01-01';
+        } else if (value === '2100-12-31 00:00:00') {
+          return '2100-12-31';
+        } else {
+          return this.toArray(value)[0].value.split(' ')[0];
         }
       },
 
       // Get time for date picker
       getFilterTime: function(value) {
+
+
+        if (!value || value === '1900-01-01 00:00:00' || value === '2100-12-31 00:00:00') {
+          return '00:00:00';
+        } else {
+          return this.toArray(value)[0].value.split(' ')[1];
+        }
         if (value) {
           return this.toArray(value)[0].value.split(' ')[1];
         } else {
           return '00:00:00';
         }
-      },
-
-      // FIRED FROM SEARCH INPUT ELEMENT
-      userInputChanged: function(event) {
-
-        // Only change search if more than 3 characters long
-        if (event.target.value.length < 3) {
-          return;
-        }
-
-        clearTimeout(this.queryFilterTimeOut);
-
-        this.queryFilterTimeOut = setTimeout(function() {
-
-          var filterObject = event.model.item;
-
-          // Set the model value to what is in the element
-          filterObject.value = event.target.value;
-
-          this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
-
-          clearTimeout(this.queryFilterTimeOut);
-
-        }.bind(this), 200);
-      },
-
-      // FIRED FROM SEARCH SELECT
-      userSelectChanged: function(event) {
-
-        var filterObject = event.model.item;
-
-        // Set the model value to what is in the element
-        filterObject.value = event.target.selected;
-
-        // Don't update if the value has been changed by the filter just being added
-        this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
-      },
-
-      // FIRED FROM SEARCH SELECT
-      userDateChanged: function(event) {
-
-        var filterObject = event.model.item;
-
-        // Set the model value to what is in the element
-        filterObject.value = event.currentTarget.dateTime;
-
-        this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
       },
 
       // Show the save presentation card.
@@ -982,6 +1100,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var collection;
         var charLimitMessage = '';
 
+        if (!headingName) {
+          return;
+        }
+
         if (showCharLimitMessage) {
           charLimitMessage = ' (min 3 chars)';
         }
@@ -1043,12 +1165,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             $button.active = false;
           });
         } else {
-          this.setDefaultAndButton();
+          this.setAndOrNotButton('and');
         }
       },
 
       // Set default AND Button
-      setDefaultAndButton: function($andOrNotButtons) {
+      setAndOrNotButton: function(type) {
 
         var $andOrNotButtons = this.$.AndOrNot.querySelectorAll('.and-or-not__button');
 
@@ -1057,8 +1179,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           $button.active = false;
         });
 
-        // Default back to And being selected
-        this.$.And.active = true;
+        // Set passed in type to active
+        switch(type) {
+          case 'and':
+            this.$.And.active = true;
+            break;
+          case 'or':
+            this.$.Or.active = true;
+            break;
+          case 'not':
+            this.$.Not.active = true;
+            break;
+          default:
+            this.$.And.active = true;
+        }
+      },
+
+      // For display purposes need to group filters into dates, mainQuery and lastFilter groups
+      createFilterGroups: function(queryBuilderStore) {
+
+        queryBuilderStore.queryObject.filters.forEach(function(queryObject, index) {
+
+          // Add last filter to lastFilter array
+          if (index === queryBuilderStore.queryObject.filters.length - 1) {
+            this.lastFilter = queryObject;
+          } else {
+            this.push('customFilters', queryObject);
+          }
+        }.bind(this));
       }
     });
   })();

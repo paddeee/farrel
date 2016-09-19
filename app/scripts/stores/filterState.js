@@ -277,11 +277,9 @@ module.exports = Reflux.createStore({
     // Set all event record's 'showRecord' properties that have been filtered out, to false
     eventsStore.setFilteredOutItemsToNotSelected(eventsCollection.data, eventsStore.userFilteredCollection.data());
 
-    // Update all Checkboxes if query contains events filter/filters with a value selected by the user
-    if (selectAllCheckBoxes && queryBuilderStore.containsEvents) {
+    // Update all Checkboxes with a value selected by the user
+    if (selectAllCheckBoxes) {
       this.selectAllCheckboxes(eventsStore, true);
-    } else if (selectAllCheckBoxes && !queryBuilderStore.containsEvents) {
-      this.selectAllCheckboxes(eventsStore, false);
     }
 
     // Update all data types checkboxes to only show records from filtered records

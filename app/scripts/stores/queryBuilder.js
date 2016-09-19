@@ -29,9 +29,6 @@ module.exports = Reflux.createStore({
 
     // Used to prevent Checkboxes being displayed when none of the filters have values
     this.filtersWithValues = [];
-
-    // Does the Query contain any events filters with values set by the user
-    this.containsEvents = false;
   },
 
   // Set the filteredData Object
@@ -200,6 +197,9 @@ module.exports = Reflux.createStore({
 
     if (action === 'add') {
       this.queryObject.filters.push(arg);
+
+      this.manageFiltersWithValues(arg, 'update');
+
       this.message = {
         type: 'queryUpdated' + broadcastMessage
       };
@@ -234,8 +234,6 @@ module.exports = Reflux.createStore({
     } else if (action === 'remove') {
       this.removeFilterWithValues(filter);
     }
-
-    this.manageContainsEventFilters();
   },
 
   // See whether to add an object to filtersWithValues
@@ -246,7 +244,7 @@ module.exports = Reflux.createStore({
     // Check to see if filter already exists
     this.filtersWithValues.forEach(function(filterObject) {
 
-      if (filterToAdd.collectionName === filterObject.collectionName && filterToAdd.fieldName === filterObject.fieldName && filterToAdd.value === filterObject.value) {
+      if (filterToAdd.name === filterObject.fieldName && filterToAdd.value === filterObject.value) {
         filterExists = true;
       }
     }.bind(this));
@@ -275,7 +273,7 @@ module.exports = Reflux.createStore({
 
       var validItem = false;
 
-      if (filterToRemove.collectionName !== filterObject.collectionName || filterToRemove.fieldName !== filterObject.fieldName || filterToRemove.value !== filterObject.value) {
+      if (filterToRemove.fieldName !== filterObject.fieldName || filterToRemove.value !== filterObject.value) {
         validItem = true;
       }
 
@@ -289,24 +287,5 @@ module.exports = Reflux.createStore({
   resetFiltersWithValues: function() {
 
     this.filtersWithValues = [];
-
-    this.manageContainsEventFilters();
-  },
-
-  // Manage property to indicate if there are any event filters. Because if not, the application shouldn't select all
-  // event checkboxes if a filter is added to a different data type. Otherwise a filter on people will select all
-  // events which will select more people which would be confusing to user.
-  manageContainsEventFilters: function() {
-
-    var containsEvents = false;
-
-    this.filtersWithValues.forEach(function(filter) {
-
-      if (filter.collectionName === config.EventsCollection.name) {
-        containsEvents = true;
-      }
-    });
-
-    this.containsEvents = containsEvents;
   }
 });

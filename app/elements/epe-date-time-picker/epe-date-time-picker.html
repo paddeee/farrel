@@ -43,8 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     .picker-section {
       cursor: pointer;
-      font-size: 1.5vw;
-      margin: 1vh 0;
+      font-size: 14px;
     }
 
     iron-icon {
@@ -52,13 +51,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </style>
   <template>
-    <div class="layout vertical picker-container">
-
-      <div class="label">[[label]]</div>
+    <div class="layout horizontal picker-container">
 
       <!-- Date Picker -->
       <section on-tap="showDateDialog"
-        class="picker-section layout horizontal center">
+        class="picker-section flex layout horizontal center">
         <iron-icon
           icon="today"></iron-icon>
         <div class="flex">
@@ -69,7 +66,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-dialog
         id="DateDialog"
         class="paper-date-picker-dialog"
-        modal
         on-iron-overlay-closed="dismissDateDialog">
 
         <paper-date-picker
@@ -95,7 +91,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-dialog
         id="TimeDialog"
         class="paper-time-picker-dialog"
-        modal
         on-iron-overlay-closed="dismissTimeDialog">
 
         <paper-time-picker
