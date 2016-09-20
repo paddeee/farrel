@@ -306,7 +306,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <div class="filters__custom-search layout vertical center-justified">
-          <h1 class="self-center">Custom Filters</h1>
+          <h1 class="self-center" hidden$="[[lastFilter]]">Custom Filters</h1>
 
           <div class="filters__custom-container  filters__custom-container--main"
             hidden$="[[hideCustomFilters]]">
@@ -1048,7 +1048,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Remove filter from collection
       removeFilter: function(event) {
 
-        var index = JSON.parse(event.currentTarget.dataset.index);
+        var index = 0;
+
+        // If Last Filter can leave the index as 0
+        if (event.currentTarget.dataset.index) {
+          index = JSON.parse(event.currentTarget.dataset.index);
+        }
 
         this.queryBuilderActions.queryFiltersChanged(index, 'remove');
       },
@@ -1248,6 +1253,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
         this.customFilters = [];
 
+        // If Removing last filter
+        if (queryBuilderStore.queryObject.filters.length === 0) {
+          this.lastFilter = null;
+          this.setLastFilterValues();
+        }
+
         queryBuilderStore.queryObject.filters.forEach(function(queryObject, index) {
 
           // Add last filter to lastFilter array
@@ -1292,9 +1303,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Set properties so they update in template if edited
       setLastFilterValues: function() {
-        this.lastFilterField = this.lastFilter.fieldName;
-        this.lastFilterValue = this.lastFilter.value;
-        this.lastFilterCondition = this.getLastFilterCondition(this.lastFilter);
+
+        if (this.lastFilter) {
+          this.lastFilterField = this.lastFilter.fieldName;
+          this.lastFilterValue = this.lastFilter.value;
+          this.lastFilterCondition = this.getLastFilterCondition(this.lastFilter);
+        }
       },
 
       // Hide AND/OR/NOT on Main filter Group if first filter
