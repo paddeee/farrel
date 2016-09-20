@@ -547,13 +547,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // When the presentations data is updated, set this view's presentationsData
         this.presentationsStore.listen(function(presentationsStore) {
 
-          // ToDo: Don't know why I have to do this with iron-list. When presentationData array
-          // changes I would expect the template to update but it isn't. In meantime, forcing it
-          // by clearing the array and resetting it.
-          //this.filteredData = [];
-          //this.$.FilterName.value = '';
-          //this.$.FilterUsers.value = '';
-
           this.presentationsData = presentationsStore.presentationsData;
 
           if ((!this.filteredData || !this.filteredData.length) || presentationsStore.message === 'presentationSaved') {

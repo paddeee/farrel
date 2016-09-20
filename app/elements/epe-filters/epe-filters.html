@@ -370,9 +370,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div class="filter-item layout horizontal center">
 
                 <div class="filter-info flex">
-                  <span class><strong>"[[lastFilter.value]]"</strong></span>
+                  <span class><strong>"[[lastFilterValue]]"</strong></span>
                   <span>in </span>
-                  <span class="include-exclude-data-type"><strong>"[[getHeadingName(lastFilter.fieldName)]]"</strong></span>
+                  <span class="include-exclude-data-type"><strong>"[[getHeadingName(lastFilterField)]]"</strong></span>
                 </div>
 
                 <div class="filter-container-icons layout horizontal">
@@ -600,7 +600,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         customFilters: {
-          type: Array
+          type: Array,
+          value: []
         },
 
         lastFilter: {
@@ -608,9 +609,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: null
         },
 
+        lastFilterValue: {
+          type: String,
+          value: ''
+        },
+
+        lastFilterField: {
+          type: String,
+          value: ''
+        },
+
         lastFilterCondition: {
           type: String,
-          computed: 'getLastFilterCondition(lastFilter)',
           value: ''
         },
 
@@ -743,10 +753,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             // Set Global Search Value
             if (queryBuilderStore.queryObject) {
-              this.globalSearchValue = queryBuilderStore.queryObject.globalSearchValue;
 
-              // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
-              this.customFilters = [];
+              this.globalSearchValue = queryBuilderStore.queryObject.globalSearchValue;
 
               this.createFilterGroups(queryBuilderStore);
 
@@ -1237,18 +1245,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // For display purposes need to group filters into dates, mainQuery and lastFilter groups
       createFilterGroups: function(queryBuilderStore) {
 
+        // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
+        this.customFilters = [];
+
         queryBuilderStore.queryObject.filters.forEach(function(queryObject, index) {
 
           // Add last filter to lastFilter array
           if (index === queryBuilderStore.queryObject.filters.length - 1) {
             this.lastFilter = queryObject;
+            this.setLastFilterValues();
           } else {
             this.push('customFilters', queryObject);
           }
         }.bind(this));
+
+        // Manually stamp array to template as I can't seem to grasp how polymer updates repeat templates automatically
+        this.$.FiltersTemplate.items = [];
+
+        this.async(function() {
+          this.$.FiltersTemplate.items = this.customFilters;
+        });
       },
 
-      // Return value of Last Filter AND/OR/NOT
+      // Return condition of Last Filter AND/OR/NOT
       getLastFilterCondition: function(lastFilter) {
 
         if (lastFilter) {
@@ -1269,6 +1288,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         return '';
+      },
+
+      // Set properties so they update in template if edited
+      setLastFilterValues: function() {
+        this.lastFilterField = this.lastFilter.fieldName;
+        this.lastFilterValue = this.lastFilter.value;
+        this.lastFilterCondition = this.getLastFilterCondition(this.lastFilter);
       },
 
       // Hide AND/OR/NOT on Main filter Group if first filter
