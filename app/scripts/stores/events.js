@@ -246,9 +246,6 @@ module.exports = Reflux.createStore({
     }
 
     filterQueriesArray.forEach(function(filterQuery, index) {
-      console.log('Filter Queries Length: ' + filterQueriesArray.length);
-      console.log(filterQuery.fieldName);
-      console.log(filterQuery.$regex);
 
       if (index > 0) {
 
@@ -259,10 +256,14 @@ module.exports = Reflux.createStore({
         }
       }
 
+      // If the field is empty in database
+      if (!obj[filterQuery.fieldName]) {
+        queryConditions =  false;
+        return;
+      }
+
       queryConditions = queryConditions + queryOperator + !!obj[filterQuery.fieldName].match(filterQuery.$regex);
     });
-
-    console.log(queryConditions);
 
     // ToDo: Eval is evil and all that. However, I don't know of a better way to dynamically create an if statement.
     // Change if there is a way to do this without eval.
