@@ -23,7 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       height: calc(100% - 50px);
       right: 0;
       min-height: 300px;
-      background-color: rgba(255, 255, 255, 1);
+      background-color: whitesmoke;
       width: 30vw;
       max-width: 300px;
       position: fixed;
@@ -152,10 +152,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       margin: 3vh 0 0;
     }
 
-    .filter-type__include-exclude {
-      display: none;
-    }
-
     .filter-type--date-time-picker {
       margin: 16px 0 0;
     }
@@ -170,25 +166,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     paper-material {
-      padding: 2vh 2vw;
+      padding: 1vh 1vw;
       background: var(--primary-background-color);
     }
 
+    .filter-item {
+      padding: 8px 0;
+    }
+
     .filter-info {
-      font-size: 14px;
-      margin: 30px 0 0;
-      border-top: 1px solid grey;
-      padding: 8px 0 0;
+      font-size: 13px;
     }
 
-    .include-exclude-data-type {
-      font-style: italic;
-    }
-
-    .filter-container-icons {
-      position: absolute;
-      top: 0;
-      right: 0;
+    .filter-container-icons paper-icon-button {
+      padding: 4px;
+      height: 30px;
+      width: 30px;
     }
 
     .remove-filter {
@@ -261,10 +254,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       font-weight: normal;
     }
 
-    .filters__custom-container--main {
-      padding: 16px;
-      background: #616161;
-      border-radius: 16px;
+    .last-filter-condition {
+      font-size: 12px;
+      text-align: center;
+      margin: 2vh 0;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .main-filter-condition {
+      border-bottom: 1px dashed gray;
+      border-top: 1px dashed gray;
+      font-size: 12px;
+      text-align: center;
+      padding: 2px 0;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .left-border {
+      border-left: 1px solid gray;
+      height: 6px;
+    }
+
+    .dash-holder {
+      margin: 2px 0;
     }
 
   </style>
@@ -296,17 +310,69 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           <div class="filters__custom-container  filters__custom-container--main"
             hidden$="[[hideCustomFilters]]">
-            <template id="FiltersTemplate"
-                      is="dom-repeat"
-                      items="[[customFilters]]">
 
-              <paper-material class="filter-item">
+            <paper-material>
 
-                <div class="filter-info">
-                  <span>"[[item.value]]"</span>
-                  <span >in </span>
-                  <span class="include-exclude-data-type">[[getHeadingName(item.fieldName)]]</span>
-                  <span>field</span>
+              <template id="FiltersTemplate"
+                        is="dom-repeat"
+                        items="[[customFilters]]">
+
+                <div hidden$="[[hideMainFilterCondition(index)]]" class="main-filter-condition">
+                  <div class="layout horizontal dash-holder">
+                    <div class="flex right-border"></div>
+                    <div class="flex left-border"></div>
+                  </div>
+                  <div>[[item.andOrNot]]</div>
+                  <div class="layout horizontal dash-holder">
+                    <div class="flex"></div>
+                    <div class="flex left-border"></div>
+                  </div>
+                </div>
+
+                <div class="filter-item layout horizontal center">
+
+                  <div class="filter-info flex">
+                    <span><strong>"[[item.value]]"</strong></span>
+                    <span >in </span>
+                    <span class="include-exclude-data-type"><strong>"[[getHeadingName(item.fieldName)]]"</strong></span>
+                  </div>
+
+                  <div class="filter-container-icons layout horizontal">
+                    <paper-icon-button id="EditFilter"
+                                       class="edit-filter"
+                                       icon="create"
+                                       on-tap="editFilter"
+                                       data-index$="[[index]]"></paper-icon-button>
+                    <paper-icon-button id="RemoveFilter"
+                                       class="remove-filter"
+                                       icon="remove-circle"
+                                       on-tap="removeFilter"
+                                       data-index$="[[index]]"></paper-icon-button>
+                    <paper-tooltip for="EditFilter" position="top">
+                      Edit Filter
+                    </paper-tooltip>
+                    <paper-tooltip for="RemoveFilter" position="top">
+                      Remove Filter
+                    </paper-tooltip>
+                  </div>
+                </div>
+              </template>
+            </paper-material>
+          </div>
+
+          <div hidden$="[[hideCustomFilters]]" class="last-filter-condition">[[lastFilterCondition]]</div>
+
+          <div class="filters__custom-container  filters__custom-container--last"
+               hidden$="[[!lastFilter]]">
+
+            <paper-material>
+
+              <div class="filter-item layout horizontal center">
+
+                <div class="filter-info flex">
+                  <span class><strong>"[[lastFilter.value]]"</strong></span>
+                  <span>in </span>
+                  <span class="include-exclude-data-type"><strong>"[[getHeadingName(lastFilter.fieldName)]]"</strong></span>
                 </div>
 
                 <div class="filter-container-icons layout horizontal">
@@ -327,39 +393,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     Remove Filter
                   </paper-tooltip>
                 </div>
-              </paper-material>
-            </template>
-          </div>
-
-          <div class="filters__custom-container  filters__custom-container--last"
-               hidden$="[[!lastFilter]]">
-
-            <paper-material class="filter-item">
-
-              <div class="filter-info">
-                <span>"[[lastFilter.value]]"</span>
-                <span >in </span>
-                <span class="include-exclude-data-type">[[getHeadingName(lastFilter.fieldName)]]</span>
-                <span>field</span>
-              </div>
-
-              <div class="filter-container-icons layout horizontal">
-                <paper-icon-button id="EditFilter"
-                                   class="edit-filter"
-                                   icon="create"
-                                   on-tap="editFilter"
-                                   data-index$="[[index]]"></paper-icon-button>
-                <paper-icon-button id="RemoveFilter"
-                                   class="remove-filter"
-                                   icon="remove-circle"
-                                   on-tap="removeFilter"
-                                   data-index$="[[index]]"></paper-icon-button>
-                <paper-tooltip for="EditFilter" position="top">
-                  Edit Filter
-                </paper-tooltip>
-                <paper-tooltip for="RemoveFilter" position="top">
-                  Remove Filter
-                </paper-tooltip>
               </div>
             </paper-material>
           </div>
@@ -573,6 +606,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         lastFilter: {
           type: Object,
           value: null
+        },
+
+        lastFilterCondition: {
+          type: String,
+          computed: 'getLastFilterCondition(lastFilter)',
+          value: ''
         },
 
         hideCustomFilters: {
@@ -1207,6 +1246,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.push('customFilters', queryObject);
           }
         }.bind(this));
+      },
+
+      // Return value of Last Filter AND/OR/NOT
+      getLastFilterCondition: function(lastFilter) {
+
+        if (lastFilter) {
+
+          switch(lastFilter.andOrNot) {
+            case 'and':
+              return 'AND';
+              break;
+            case 'or':
+              return 'OR';
+              break;
+            case 'not':
+              return 'BUT NOT';
+              break;
+            default:
+              return '';
+          }
+        }
+
+        return '';
+      },
+
+      // Hide AND/OR/NOT on Main filter Group if first filter
+      hideMainFilterCondition: function(index) {
+
+        if (index === 0) {
+          return true;
+        }
+        return false;
       }
     });
   })();
