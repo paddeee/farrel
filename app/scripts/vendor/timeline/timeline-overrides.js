@@ -302,8 +302,8 @@ TL.Timeline = TL.Class.extend({
     var n = this._getEventIndex(unique_id);
     var d = this.config.events[n];
 
-    //this._storyslider.createSlide(d, this.config.title ? n+1 : n);
-    //this._storyslider._updateDrawSlides();
+    this._storyslider.createSlide(d, this.config.title ? n+1 : n);
+    this._storyslider._updateDrawSlides();
 
     this._timenav.createMarker(d, n);
 
@@ -329,8 +329,8 @@ TL.Timeline = TL.Class.extend({
 
       var event = this.config.events.splice(n, 1);
       delete this.config.event_dict[event[0].unique_id];
-      //this._storyslider.destroySlide(this.config.title ? n+1 : n);
-      //this._storyslider._updateDrawSlides();
+      this._storyslider.destroySlide(this.config.title ? n+1 : n);
+      this._storyslider._updateDrawSlides();
 
       this._timenav.destroyMarker(n);
 

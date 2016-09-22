@@ -158,7 +158,7 @@ module.exports = Reflux.createStore({
 
     collectionToAddTransformTo = this.dataSource.getCollection(this.collectionName);
 
-    if (!collectionToAddTransformTo) {
+    if (!collectionToAddTransformTo || !this.dataSource.getCollection(this.collectionName).transforms[transformName]) {
       return;
     }
 

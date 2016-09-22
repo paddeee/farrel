@@ -17,82 +17,83 @@ let externalDisplay = false;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
+var splashWindow = null;
 var controllerWindow = null;
 var courtWindow = null;
 var publishWindow = null;
 
 // Handle Squirrel Events
-if (require('electron-squirrel-startup')) {
-  return;
-}
+/*if (require('electron-squirrel-startup')) {
+ return;
+ }
 
-// this should be placed at top of main.js to handle setup events quickly
-if (handleSquirrelEvent()) {
-  // squirrel event handled and app will exit in 1000ms, so don't do anything else
-  return;
-}
+ // this should be placed at top of main.js to handle setup events quickly
+ if (handleSquirrelEvent()) {
+ // squirrel event handled and app will exit in 1000ms, so don't do anything else
+ return;
+ }
 
-function handleSquirrelEvent() {
-  if (process.argv.length === 1 || process.platform !== 'win32') {
-    return false;
-  }
+ function handleSquirrelEvent() {
+ if (process.argv.length === 1 || process.platform !== 'win32') {
+ return false;
+ }
 
-  const ChildProcess = require('child_process');
-  const path = require('path');
+ const ChildProcess = require('child_process');
+ const path = require('path');
 
-  const appFolder = path.resolve(process.execPath, '..');
-  const rootAtomFolder = path.resolve(appFolder, '..');
-  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
-  const exeName = path.basename(process.execPath);
+ const appFolder = path.resolve(process.execPath, '..');
+ const rootAtomFolder = path.resolve(appFolder, '..');
+ const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+ const exeName = path.basename(process.execPath);
 
-  const spawn = function(command, args) {
-    let spawnedProcess, error;
+ const spawn = function(command, args) {
+ let spawnedProcess, error;
 
-    try {
-      spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
-    } catch (error) {}
+ try {
+ spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
+ } catch (error) {}
 
-    return spawnedProcess;
-  };
+ return spawnedProcess;
+ };
 
-  const spawnUpdate = function(args) {
-    return spawn(updateDotExe, args);
-  };
+ const spawnUpdate = function(args) {
+ return spawn(updateDotExe, args);
+ };
 
-  const squirrelEvent = process.argv[1];
-  switch (squirrelEvent) {
-    case '--squirrel-install':
-    case '--squirrel-updated':
-      // Optionally do things such as:
-      // - Add your .exe to the PATH
-      // - Write to the registry for things like file associations and
-      //   explorer context menus
+ const squirrelEvent = process.argv[1];
+ switch (squirrelEvent) {
+ case '--squirrel-install':
+ case '--squirrel-updated':
+ // Optionally do things such as:
+ // - Add your .exe to the PATH
+ // - Write to the registry for things like file associations and
+ //   explorer context menus
 
-      // Install desktop and start menu shortcuts
-      spawnUpdate(['--createShortcut', exeName]);
+ // Install desktop and start menu shortcuts
+ spawnUpdate(['--createShortcut', exeName]);
 
-      setTimeout(app.quit, 1000);
-      return true;
+ setTimeout(app.quit, 1000);
+ return true;
 
-    case '--squirrel-uninstall':
-      // Undo anything you did in the --squirrel-install and
-      // --squirrel-updated handlers
+ case '--squirrel-uninstall':
+ // Undo anything you did in the --squirrel-install and
+ // --squirrel-updated handlers
 
-      // Remove desktop and start menu shortcuts
-      spawnUpdate(['--removeShortcut', exeName]);
+ // Remove desktop and start menu shortcuts
+ spawnUpdate(['--removeShortcut', exeName]);
 
-      setTimeout(app.quit, 1000);
-      return true;
+ setTimeout(app.quit, 1000);
+ return true;
 
-    case '--squirrel-obsolete':
-      // This is called on the outgoing version of your app before
-      // we update to the new version - it's the opposite of
-      // --squirrel-updated
+ case '--squirrel-obsolete':
+ // This is called on the outgoing version of your app before
+ // we update to the new version - it's the opposite of
+ // --squirrel-updated
 
-      app.quit();
-      return true;
-  }
-};
+ app.quit();
+ return true;
+ }
+ };*/
 
 // Get the network config file
 var getNetworkConfig =  function () {
@@ -169,6 +170,24 @@ var getRoles =  function () {
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
 
+  // Create and show Splash Screen
+  splashWindow = new BrowserWindow({
+    backgroundColor: '#47545f',
+    width: 800,
+    height: 600,
+    frame: false,
+    transparent: true
+  });
+
+  if (buildType === 0) {
+    splashWindow.loadURL('file://' + __dirname + '/splash-online.html');
+  } else {
+    splashWindow.loadURL('file://' + __dirname + '/splash-offline.html');
+  }
+
+  splashWindow.show();
+
+  // Create External Display Window
   var createExternalWindow = function() {
 
     // Using find so will only return one external display. Need to know how this should work with
@@ -198,6 +217,7 @@ app.on('ready', function() {
     //courtWindow.webContents.openDevTools();
   };
 
+  // Create Main Application Window
   var createControllerWindow = function() {
 
     // Create the browser window.
@@ -208,7 +228,7 @@ app.on('ready', function() {
     });
 
     controllerWindow.setBounds(getControllerBounds());
-    controllerWindow.show();
+    //controllerWindow.show();
 
     // If controller window is resized, keep publish window bounds in sync
     controllerWindow.on('resize', function() {
@@ -218,9 +238,10 @@ app.on('ready', function() {
     });
 
     // Open the DevTools.
-    // controllerWindow.webContents.openDevTools();
+    //controllerWindow.webContents.openDevTools();
   };
 
+  // Create Hidden Publish Screen Window
   var createPublishWindow = function() {
 
     if (buildType === 1) {
@@ -374,6 +395,11 @@ app.on('ready', function() {
       courtWindow.destroy();
       courtWindow = null;
     }
+
+    if (splashWindow) {
+      splashWindow.destroy();
+      splashWindow = null;
+    }
   });
 
   if (publishWindow) {
@@ -512,4 +538,11 @@ ipcMain.on('quit-app', function() {
 // Open a link in a browser window.
 ipcMain.on('open-link-in-browser', function(event, url) {
   shell.openExternal(url);
+});
+
+// When app is loaded, swap splashwindow for controller window.
+ipcMain.on('app-loaded', function() {
+  splashWindow.destroy();
+  splashWindow = null;
+  controllerWindow.show();
 });

@@ -489,7 +489,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       hidePackagesList: {
         type: Boolean,
-        computed: 'isPackages(presentationsData)',
         value: true
       },
 
@@ -554,12 +553,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.filteredData = presentationsStore.presentationsData;
           }
 
+          this.isPackages(this.presentationsData);
+
           this.manageExportButtons();
 
-          this.$.List.items = this.filteredData;
+          // ToDo: Don't know why I have to do this with repeat templates. When presentationData array
+          // changes I would expect the template to update but it isn't. In meantime, forcing it
+          // by clearing the array and resetting it.
+          this.$.List.items = [];
+
+          if (presentationsStore.message === 'presentationDeleted') {
+            this.async(function () {
+              this.$.List.items = this.presentationsData;
+            });
+          } else {
+            this.async(function () {
+              this.$.List.items = this.filteredData;
+            });
+          }
 
           if (presentationsStore.message === 'presentationDeleted') {
             this.$.DeletedDialog.open();
+            this.$.FilterUsers.value = '';
+            this.$.FilterName.value = '';
           } else if (presentationsStore.message === 'deletePackageDbError') {
             this.$.DeletedErrorDialog.open();
           } else if (presentationsStore.message === 'approvalStateDbError') {
@@ -899,13 +915,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     },
 
-    // Return Boolean based on gridData
+    // Set hidePackagesList based on presentation
     isPackages: function(presentationData) {
 
       if (presentationData && presentationData.length) {
-        return false;
+        this.hidePackagesList = false;
+      } else {
+        this.hidePackagesList = true;
       }
-      return true;
     },
 
     // If Unapproved Source show Dialog

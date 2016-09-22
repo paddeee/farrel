@@ -147,6 +147,10 @@ module.exports = Reflux.createStore({
 
             console.log('DataBase saved');
 
+            // Fix for App not working properly after import.
+            // Reloading database into memory seems to sort things
+            dataSourceStore.loadDatabase();
+
             // Pass on to listeners
             this.trigger({
               type: 'success',

@@ -161,6 +161,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     ready: function() {
 
+      if (appMode === 'app') {
+
+        // Just give a bit more time to get everything ready
+        this.async(function() {
+          ipcRenderer.send('app-loaded');
+        }, 1000);
+      }
+
       // Listen to User Store
       this.userStore.listen(function (user) {
 
