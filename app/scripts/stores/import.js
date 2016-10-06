@@ -121,7 +121,7 @@ module.exports = Reflux.createStore({
       .then(function() {
 
         // Save database
-        dataSourceStore.latestDB.saveDatabase(function(response) {
+        dataSourceStore.dataSource.saveDatabase(function(response) {
 
           var messageType;
           var message;
@@ -149,7 +149,7 @@ module.exports = Reflux.createStore({
 
             // Fix for App not working properly after import.
             // Reloading database into memory seems to sort things
-            dataSourceStore.loadDatabase();
+            //dataSourceStore.loadDatabase();
 
             // Pass on to listeners
             this.trigger({

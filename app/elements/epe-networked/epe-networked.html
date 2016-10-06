@@ -284,7 +284,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               on-package-view-changed="packageViewChanged"
               on-data-grid-changed="dataGridChanged"
               on-profile-changed="profileChanged"
-              on-source-changed="sourceChanged"></epe-create-package>
+              on-source-changed="sourceChanged"
+              on-show-select-all-dialog="showSelectAllDialog"
+              on-hide-select-all-dialog="hideSelectAllDialog"></epe-create-package>
           </section>
 
           <!-- Edit Package Section -->
@@ -312,7 +314,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               on-package-view-changed="packageViewChanged"
               on-data-grid-changed="dataGridChanged"
               on-profile-changed="profileChanged"
-              on-source-changed="sourceChanged"></epe-create-package>
+              on-source-changed="sourceChanged"
+              on-show-select-all-dialog="showSelectAllDialog"
+              on-hide-select-all-dialog="hideSelectAllDialog"></epe-create-package>
           </section>
 
           <!-- View Packages Section -->
@@ -346,7 +350,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       data-source-actions="[[dataSourceActions]]"
       user-store="[[userStore]]"
       on-syncing-db="syncingDB"
-      on-show-dialog="showDialog"></epe-filters>
+      on-show-dialog="showDialog"
+      on-show-select-all-dialog="showSelectAllDialog"></epe-filters>
 
     <!-- Dialogs -->
 
@@ -438,6 +443,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-button dialog-dismiss autofocus>Cancel</paper-button>
         <paper-button dialog-confirm
                       on-tap="quitAppConfirmed">OK</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-dialog id="SelectAllEventsDialog" modal>
+      <h2>Updating Selected Events</h2>
+      <div class="layout horizontal center-justified">
+        <paper-spinner active></paper-spinner>
       </div>
     </paper-dialog>
 
@@ -964,6 +976,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Open the Syncing Loading Dialog
         this.$.SyncingDBDialog.open();
+      },
+
+      // Show spinner when selecting a lot of events as UI freezes due to Timeline
+      showSelectAllDialog: function() {
+        this.$.SelectAllEventsDialog.open();
+      },
+
+      // Show spinner when selecting a lot of events as UI freezes due to Timeline
+      hideSelectAllDialog: function() {
+        this.$.SelectAllEventsDialog.close();
       }
     });
   })();

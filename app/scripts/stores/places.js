@@ -168,7 +168,7 @@ module.exports = Reflux.createStore({
       sorting: {
         type: 'simplesort',
         property: '$loki',
-        desc: true
+        desc: false
       },
       dateQueries: {
         from: [],

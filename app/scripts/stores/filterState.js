@@ -55,6 +55,8 @@ module.exports = Reflux.createStore({
       this.autoFilterCollections(false, true, true);
     } else if (queryBuilderStore.message.type === 'queryUpdatedPackageSelected') {
       this.autoFilterCollections(false, true, true);
+    } else if (queryBuilderStore.message.type === 'queryAdded') {
+      this.autoFilterCollections(false, false, false);
     } else if (queryBuilderStore.message.type === 'queryUpdated') {
       this.autoFilterCollections(true, true, true);
     } else if (queryBuilderStore.message.type === 'creatingSelected') {
@@ -94,7 +96,7 @@ module.exports = Reflux.createStore({
 
     // When the userFilteredCollection has been created on each data store, we can call the autoFilterCollections
     // method
-    this.autoFilterCollections(false, false, false, true);
+    this.autoFilterCollections(false, false, false, sortingObject);
   },
 
   // Convert a queryBuilder object into one that can be used by loki to apply a transform on the data
@@ -202,8 +204,9 @@ module.exports = Reflux.createStore({
 
     var transform = {
       type: 'simplesort',
-      property: sortingObject.fieldName,
-      desc: sortingObject.desc
+      property: sortingObject.sortStatus === 'neutral' ? '$loki' : sortingObject.fieldName,
+      desc: sortingObject.sortStatus === 'true' ? true : sortingObject.desc,
+      sortStatus: sortingObject.sortStatus
     };
 
     return transform;
@@ -256,7 +259,7 @@ module.exports = Reflux.createStore({
   // Filter on datastore userFilteredCollections based on linkage rules between tables
   // Event Place field links to Places Shortname field
   // Event Suspects, Victims and Witnesses fields link to People's Shortname field
-  autoFilterCollections: function (selectAllCheckBoxes, sortCheckBoxes, sortEvents, sortPerformed) {
+  autoFilterCollections: function (selectAllCheckBoxes, sortCheckBoxes, sortEvents, sortingObject) {
 
     var eventsCollection = dataSourceStore.dataSource.getCollection(eventsName);
 
@@ -269,25 +272,42 @@ module.exports = Reflux.createStore({
     this.filterTransforms.transformName = this.transformName;
 
     // Call filterStateChanged on each data store to ensure each store's userFilteredCollection is up to date
-    eventsStore.filterStateChanged(this.filterTransforms);
-    placesStore.filterStateChanged(this.filterTransforms);
-    peopleStore.filterStateChanged(this.filterTransforms);
-    sourcesStore.filterStateChanged(this.filterTransforms);
+    if (!sortingObject) {
+      eventsStore.filterStateChanged(this.filterTransforms);
+      placesStore.filterStateChanged(this.filterTransforms);
+      peopleStore.filterStateChanged(this.filterTransforms);
+      sourcesStore.filterStateChanged(this.filterTransforms);
 
-    // Set all event record's 'showRecord' properties that have been filtered out, to false
-    eventsStore.setFilteredOutItemsToNotSelected(eventsCollection.data, eventsStore.userFilteredCollection.data());
+      // Set all event record's 'showRecord' properties that have been filtered out, to false
+      eventsStore.setFilteredOutItemsToNotSelected(eventsCollection.data, eventsStore.userFilteredCollection.data());
 
-    // Update all Checkboxes if query contains events filter/filters with a value selected by the user
-    if (selectAllCheckBoxes && queryBuilderStore.containsEvents) {
-      this.selectAllCheckboxes(eventsStore, true);
-    } else if (selectAllCheckBoxes && !queryBuilderStore.containsEvents) {
-      this.selectAllCheckboxes(eventsStore, false);
-    }
+      // Update all Checkboxes if query contains events filter/filters with a value selected by the user
+      if (selectAllCheckBoxes && queryBuilderStore.containsEvents) {
+        this.selectAllCheckboxes(eventsStore, true);
+      } else if (selectAllCheckBoxes && !queryBuilderStore.containsEvents) {
+        this.selectAllCheckboxes(eventsStore, false);
+      }
 
-    // Update all data types checkboxes to only show records from filtered records
-    // Don't do this if called by column sorting
-    if (!sortPerformed) {
+      // Update all data types checkboxes to only show records from filtered records
+      // Don't do this if called by column sorting
       this.eventsCheckBoxUpdated(eventsCollection.data);
+
+    } else {
+
+      switch(sortingObject.collectionName) {
+        case eventsName:
+          eventsStore.filterStateChanged(this.filterTransforms);
+          break;
+        case placesName:
+          placesStore.filterStateChanged(this.filterTransforms);
+          break;
+        case peopleName:
+          peopleStore.filterStateChanged(this.filterTransforms);
+          break;
+        case sourcesName:
+          sourcesStore.filterStateChanged(this.filterTransforms);
+          break;
+      }
     }
 
     // Let listeners know data has been updated

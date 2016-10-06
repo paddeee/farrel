@@ -6,7 +6,6 @@ const electron = window.electronRequire('electron');
 
 const fs = window.electronRequire('fs');
 const path = window.electronRequire('path');
-const dataSourceStore = require('../stores/dataSource.js');
 
 module.exports = Reflux.createStore({
 
@@ -38,7 +37,6 @@ module.exports = Reflux.createStore({
 
       var screenshotPath;
       var pdfPath;
-      var userName = dataSourceStore.dataSource.getCollection('Presentations').data[0].userName;
 
       // Save log in different location depending on court mode state
       if (publishObject.courtMode) {
@@ -54,7 +52,6 @@ module.exports = Reflux.createStore({
         imagePath: screenshotPath,
         imageSize: [rect.width, rect.height],
         pdfPath: pdfPath,
-        userName: userName,
         ernRefs: publishObject.ernRefs,
         openOnSave: publishObject.openOnSave,
         courtMode: publishObject.courtMode

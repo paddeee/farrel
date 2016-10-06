@@ -101,12 +101,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <td class="bold">Date</td>
         <td id="Date"></td>
       </tr>
-      <tr>
-        <td class="bold">UserID</td>
-        <td id="User"></td>
-        <td></td>
-        <td></td>
-      </tr>
     </table>
 
     <table id="MapTable" hidden>
@@ -171,7 +165,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var $fileName = document.querySelector('#FileName');
       var $time = document.querySelector('#Time');
       var $date = document.querySelector('#Date');
-      var $user = document.querySelector('#User');
       var $mapTable = document.querySelector('#MapTable');
       var $mapName = document.querySelector('#MapName');
       var $ernTable = document.querySelector('#ErnTable');
@@ -193,7 +186,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       $fileName.innerHTML = pdfObject.fileName;
       $date.innerHTML = moment().format('DD-MM-YYYY');
       $time.innerHTML = moment().format('HH:mm:ss');
-      $user.innerHTML = pdfObject.userName;
 
       if (pdfObject.mapName) {
         $mapName.innerHTML = pdfObject.mapName;

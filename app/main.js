@@ -270,10 +270,10 @@ app.on('ready', function() {
     });
 
     // Get screen size of controller display
-    controllerBounds.width = Math.round(controllerDisplay.workAreaSize.width * 0.9);
-    controllerBounds.height = Math.round(controllerDisplay.workAreaSize.height * 0.9);
-    controllerBounds.x = Math.round(controllerDisplay.bounds.x + (controllerBounds.width * 0.05));
-    controllerBounds.y = Math.round(controllerDisplay.bounds.y + (controllerBounds.height * 0.05));
+    controllerBounds.width = Math.round(controllerDisplay.workAreaSize.width);
+    controllerBounds.height = Math.round(controllerDisplay.workAreaSize.height);
+    controllerBounds.x = Math.round(controllerDisplay.bounds.x);
+    controllerBounds.y = Math.round(controllerDisplay.bounds.y);
 
     return controllerBounds;
   };

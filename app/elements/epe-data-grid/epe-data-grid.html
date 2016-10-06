@@ -698,6 +698,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (this.gridData) {
 
+          // Reset Pagination to first page on collection name changing
+          this.$.Paginator.currentpage = 0;
+
           // This is the column headings
           this.gridDataFirstRecord = this.gridData[0];
 
@@ -916,10 +919,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           $header.setAttribute('sort-status', 'neutral');
         });
 
-        if (this.sortingState.desc === true) {
-          $sortedHeader.setAttribute('sort-status', 'false');
-        } else if (this.sortingState.desc === false) {
+        if (this.sortingState.sortStatus === 'neutral') {
+          $sortedHeader.setAttribute('sort-status', 'neutral');
+        } else if (this.sortingState.sortStatus === 'true') {
           $sortedHeader.setAttribute('sort-status', 'true');
+        } else if (this.sortingState.sortStatus === 'false') {
+          $sortedHeader.setAttribute('sort-status', 'false');
         }
       },
 
@@ -931,15 +936,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var sortStatus = event.currentTarget.getAttribute('sort-status');
 
         // Set the desc property to send to the sorting collection transform
-        if (sortStatus === 'neutral' || sortStatus === 'false') {
+        if (sortStatus === 'neutral') {
           desc = false;
-        } else if (sortStatus === 'true') {
+          sortStatus = 'false';
+        } else if (sortStatus === 'false') {
           desc = true;
+          sortStatus = 'true';
+        } else if (sortStatus === 'true') {
+          desc = false;
+          sortStatus = 'neutral';
         }
 
         sortingObject = {
           collectionName: this.collectionName,
           fieldName: event.model.item.name,
+          sortStatus: sortStatus,
           desc: desc
         };
 
@@ -970,8 +981,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // even when the updateCheckboxes method is called.
           if (this.showAllSelected === true) {
 
-            if (this.gridData.length > 200 && this.collectionName === this.config.EventsCollection.name) {
-              this.fire('show-select-all-dialog');
+            if (event.type === 'change') {
+              if (this.gridData.length > 200 && this.collectionName === this.config.EventsCollection.name) {
+                this.fire('show-select-all-dialog');
+              }
             }
 
             this.querySelectorAll('.record-checkbox').forEach(function(checkBox) {

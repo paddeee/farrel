@@ -186,7 +186,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </paper-dialog>
 
     <paper-dialog id="SelectAllEventsDialog" modal>
-      <h2>Selecting All Events</h2>
+      <h2>Selecting Events</h2>
       <div class="layout horizontal center-justified">
         <paper-spinner active></paper-spinner>
       </div>
@@ -498,12 +498,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Show spinner when selecting a lot of events as UI freezes due to Timeline
       showSelectAllDialog: function() {
-        this.$.SelectAllEventsDialog.open();
+        this.fire('show-select-all-dialog');
       },
 
       // When the TimeLine Updates
       timeLineUpdated: function() {
-        this.$.SelectAllEventsDialog.close();
+        this.fire('hide-select-all-dialog');
       }
     });
   })();

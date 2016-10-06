@@ -519,28 +519,39 @@ module.exports = Reflux.createStore({
       var latestDBPresentationsCollection = this.latestDB.getCollection(presentationsCollectionName);
       var queryBuilderProcessedChanges;
       var presentationsProcessedChanges;
+      var queryCollectionIndex;
+      var presentationsCollectionIndex;
 
-      // Don't do this if first time data has been imported, otherwise all the collections will be overwritten with no collections
+      // Don't do this if first time data has been imported, otherwise all the collections will be overwritten
+      // with no collections
       if (!latestDBPresentationsCollection) {
         this.latestDB = this.dataSource;
         resolve();
         return;
       }
 
-      // If importing data QueryBuilder and Presentations Collections may not exist so don't bother with syncing
+      queryBuilderProcessedChanges = this.processCollectionChanges(queryBuilderCollection.changes);
+      presentationsProcessedChanges = this.processCollectionChanges(presentationsCollection.changes);
+
+      queryBuilderProcessedChanges.forEach(this.syncChange);
+      presentationsProcessedChanges.forEach(this.syncChange);
+
+      // If importing set the Queries and presentations collections to be the same as from the latest DB
       if (syncType === 'import') {
-        this.dataSource = this.latestDB;
-        resolve();
-      } else {
+        this.dataSource.collections.forEach(function(collection, index) {
+          if (collection.name === queriesCollectionName) {
+            queryCollectionIndex = index;
+          } else if (collection.name === presentationsCollectionName) {
+            presentationsCollectionIndex = index;
+          }
+        }.bind(this));
 
-        queryBuilderProcessedChanges = this.processCollectionChanges(queryBuilderCollection.changes);
-        presentationsProcessedChanges = this.processCollectionChanges(presentationsCollection.changes);
-
-        queryBuilderProcessedChanges.forEach(this.syncChange);
-        presentationsProcessedChanges.forEach(this.syncChange);
-
-        resolve();
+        // Override dataSource collections. Probably bad way of doing this.
+        this.dataSource.collections[queryCollectionIndex] = this.latestDB.getCollection(queriesCollectionName);
+        this.dataSource.collections[presentationsCollectionIndex] = this.latestDB.getCollection(presentationsCollectionName);
       }
+
+      resolve();
 
     }.bind(this));
   },

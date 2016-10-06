@@ -292,7 +292,7 @@ TL.Timeline = TL.Class.extend({
     this.goTo(this._getSlideIndex(this.current_id) + 1);
   },
 
-  /* Event maniupluation
+  /* Event manipulation
    ================================================== */
 
   // Add an event

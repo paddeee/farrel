@@ -484,7 +484,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       filteredData: {
-        type: Array
+        type: Array,
+        value: []
       },
 
       hidePackagesList: {
@@ -550,7 +551,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           if ((!this.filteredData || !this.filteredData.length) || presentationsStore.message === 'presentationSaved') {
             this.filteredData = [];
-            this.filteredData = presentationsStore.presentationsData;
+            this.filteredData = presentationsStore.presentationsData || [];
           }
 
           this.isPackages(this.presentationsData);

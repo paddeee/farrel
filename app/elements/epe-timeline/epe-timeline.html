@@ -171,11 +171,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         },
 
-        idOfLastEventToBeRemoved: {
-          type: Array,
-          value: []
-        },
-
         timelineShowing: {
           type: Boolean,
           observer: 'updateTimeLineDisplay'
@@ -206,7 +201,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         previousEvents = this.timeLineData.events;
 
-        this.timeLineData = timeLineJSONObject;
+        this.timeLineData = _.cloneDeep(timeLineJSONObject);
 
         // If the TimeLine has not been created
         if (!this.timeLine) {
@@ -218,14 +213,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             // Initialise Timeline
             this.createTimeLine();
+          } else {
+            this.fire('timeline-updated');
           }
 
         } else {
-
-          if (this.timeLineData.events.length) {
-            this.setFirstAndLast();
-          }
-
           this.updateTimeLine(previousEvents);
         }
 
@@ -299,6 +291,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // If this method has been called because a user has updated a filter but selectedRecords remain the same
         if (!eventIdsToAdd.length && !eventIdsToRemove.length) {
+          this.fire('timeline-updated');
           return;
         }
 
@@ -310,41 +303,45 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }.bind(this));
 
-        // If the selected events were previously cleared we can now remove the last event that TimeLine.js
-        // would not let us remove due to its limitations
-        if (this.idOfLastEventToBeRemoved.length) {
-
-          if (this.timeLine.config.events.length > 1) {
-
-            //if (_.includes(eventIdsToAdd, this.idOfLastEventToBeRemoved[0])) {
-              this.timeLine.removeId(this.idOfLastEventToBeRemoved);
-              this.idOfLastEventToBeRemoved = [];
-            //}
-          }
-        }
-
         // Remove old events
         previousEvents.forEach(function(eventObject) {
 
-          if (this.timeLine.config.events.length > 1) {
-
-            if (_.includes(eventIdsToRemove, eventObject.unique_id)) {
-              this.timeLine.removeId(eventObject.unique_id, 'noUpdate');
-            }
-
-            // TimeLine throws a wobbler when removing the last event. So instead the event needs to be stored
-            // and then removed first thing next time the events change
-          } else if (this.timeLine.config.events.length === 1) {
-            this.idOfLastEventToBeRemoved = [eventObject.unique_id];
+          if (_.includes(eventIdsToRemove, eventObject.unique_id)) {
+            this.timeLine.removeId(eventObject.unique_id, 'noUpdate');
           }
 
         }.bind(this));
 
-        if (this.timelineShowing) {
+        // Keep TimeLine Events in sync before updating TimeLine UI
+        this.syncTimeLineEvents();
+
+        // Update UI Locking operation of updating timeline, only if the TimeLine is showing
+        if (this.timelineShowing && this.timeLine.config.events.length) {
           this.timeLine.updateDrawSlides();
         }
 
         this.fire('timeline-updated');
+      },
+
+      // Keep internal timeLineData events and timeLine.js events arrays in same order as timeLine.js will reorder
+      // array based on start date
+      syncTimeLineEvents: function() {
+
+        // Order timeLineData.events to keep in sync with order of TimeLine's internal events array
+        var sortingArray = _.map(this.timeLine.config.events, 'unique_id');
+
+        this.timeLineData.events.sort(function(a, b){
+          return sortingArray.indexOf(a.unique_id) - sortingArray.indexOf(b.unique_id);
+        });
+
+        this.timeLine._timenav._markers.sort(function(a, b){
+          return sortingArray.indexOf(a.data.unique_id) - sortingArray.indexOf(b.data.unique_id);
+        });
+
+        // Set first and Last nav events
+        if (this.timeLineData.events.length) {
+          this.setFirstAndLast();
+        }
       },
 
       // Update TimeLine display when it is shown
@@ -358,7 +355,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Timeline seems a bit buggy. Having to do hacky things like zoom twice to make sure the time axis appear
       initialiseTimelineUI: function() {
 
-        if (this.timeLine) {
+        if (this.timeLine && this.timeLine.config.events.length) {
           this.timeLine.setZoom(1);
           this.timeLine.setZoom(this.zoom);
           this.timeLine.updateDisplay();
