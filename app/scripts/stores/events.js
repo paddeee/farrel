@@ -239,6 +239,8 @@ module.exports = Reflux.createStore({
     var filterQueriesArray = this.filterTransform[this.collectionName].filterQueries;
     var queryConditions = '';
     var queryOperator = '';
+    var openMainGroup = '';
+    var closeMainGroup = '';
 
     // If no filters
     if (!filterQueriesArray.length) {
@@ -254,6 +256,11 @@ module.exports = Reflux.createStore({
         } else if (filterQuery.andOrNot === 'or') {
           queryOperator = '||';
         }
+
+        if (index === filterQueriesArray.length - 2) {
+          openMainGroup = '(';
+          closeMainGroup = ')';
+        }
       }
 
       // If the field is empty in database
@@ -262,7 +269,7 @@ module.exports = Reflux.createStore({
         return;
       }
 
-      queryConditions = queryConditions + queryOperator + !!obj[filterQuery.fieldName].match(filterQuery.$regex);
+      queryConditions = openMainGroup + queryConditions + queryOperator + !!obj[filterQuery.fieldName].match(filterQuery.$regex) + closeMainGroup;
     });
 
     // ToDo: Eval is evil and all that. However, I don't know of a better way to dynamically create an if statement.
