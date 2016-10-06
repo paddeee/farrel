@@ -281,6 +281,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       margin: 2px 0;
     }
 
+    .search-value {
+      color: rgb(195, 69, 40);
+    }
+
+    .search-field-value {
+      color: rgb(67, 105, 120);
+    }
+
   </style>
   <template>
 
@@ -332,9 +340,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <div class="filter-item layout horizontal center">
 
                   <div class="filter-info flex">
-                    <span><strong>"[[item.value]]"</strong></span>
+                    <span class="search-value"><strong>"[[item.value]]"</strong></span>
                     <span >in </span>
-                    <span class="include-exclude-data-type"><strong>"[[getHeadingName(item.fieldName)]]"</strong></span>
+                    <span class="search-field-value"><strong>"[[getHeadingName(item.fieldName)]]"</strong></span>
                   </div>
 
                   <div class="filter-container-icons layout horizontal">
@@ -370,9 +378,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div class="filter-item layout horizontal center">
 
                 <div class="filter-info flex">
-                  <span class><strong>"[[lastFilterValue]]"</strong></span>
+                  <span class="search-value"><strong>"[[lastFilterValue]]"</strong></span>
                   <span>in </span>
-                  <span class="include-exclude-data-type"><strong>"[[getHeadingName(lastFilterField)]]"</strong></span>
+                  <span class="search-field-value"><strong>"[[getHeadingName(lastFilterField)]]"</strong></span>
                 </div>
 
                 <div class="filter-container-icons layout horizontal">
@@ -470,7 +478,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                        hidden="true"
                        type="search"
                        label="[[getHeadingName(selectedFieldFilterObject.name, 'true')]]"
-                       value="[[selectedFieldFilterObject.value]]">
+                       value="[[selectedFieldFilterObject.value]]"
+                       on-keypress="textFieldTyped">
           </paper-input>
 
           <!-- Select -->
@@ -544,8 +553,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="buttons">
         <paper-button dialog-dismiss
                       on-tap="addFilterCancelled">Cancel</paper-button>
-        <paper-button on-tap="filterAdded" hidden$="[[editingFilter]]">Add Filter</paper-button>
-        <paper-button on-tap="filterEdited" hidden$="[[!editingFilter]]">Edit Filter</paper-button>
+        <paper-button id="AddFilterButton" on-tap="filterAdded" hidden$="[[editingFilter]]">Add Filter</paper-button>
+        <paper-button id="EditFilterButton" on-tap="filterEdited" hidden$="[[!editingFilter]]">Edit Filter</paper-button>
       </div>
     </paper-dialog>
 
@@ -1316,6 +1325,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return true;
         }
         return false;
+      },
+
+      // When a user types in an Add filter text field. If return key, add the filtet
+      textFieldTyped: function(event) {
+
+        var $addFilterButton = this.$.AddFilterButton;
+        var $editFilterButton = this.$.EditFilterButton;
+
+        if (event.keyCode === 13) {
+
+          if (!$addFilterButton.hidden) {
+            this.filterAdded();
+          } else if (!$editFilterButton.hidden) {
+            this.filterEdited();
+          }
+        }
       }
     });
   })();
