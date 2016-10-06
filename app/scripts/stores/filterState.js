@@ -55,9 +55,7 @@ module.exports = Reflux.createStore({
       this.autoFilterCollections(false, true, true);
     } else if (queryBuilderStore.message.type === 'queryUpdatedPackageSelected') {
       this.autoFilterCollections(false, true, true);
-    } else if (queryBuilderStore.message.type === 'queryAdded') {
-      this.autoFilterCollections(false, false, false);
-    } else if (queryBuilderStore.message.type === 'queryUpdated') {
+    } else if (queryBuilderStore.message.type === 'queryAdded' || queryBuilderStore.message.type === 'queryUpdated') {
       this.autoFilterCollections(true, true, true);
     } else if (queryBuilderStore.message.type === 'creatingSelected') {
       this.resetSelectedSources();
