@@ -98,8 +98,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       padding: 1vh 0;
     }
 
-    h1 {
-      font-size: 18px;
+    h2 {
+      font-size: 14px;
+      text-align: center;
     }
 
     .filter__button-add {
@@ -131,7 +132,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     .filters__no-filters {
-      font-size: 16px;
+      font-size: 12px;
       text-align: center;
     }
 
@@ -254,8 +255,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       font-weight: normal;
     }
 
-    .last-filter-condition {
-      font-size: 12px;
+    .last-filter-condition,
+    .global-filter-condition {
+      font-size: 11px;
       text-align: center;
       margin: 2vh 0;
       font-weight: bold;
@@ -265,7 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     .main-filter-condition {
       border-bottom: 1px dashed gray;
       border-top: 1px dashed gray;
-      font-size: 12px;
+      font-size: 11px;
       text-align: center;
       padding: 2px 0;
       font-weight: bold;
@@ -289,6 +291,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       color: rgb(67, 105, 120);
     }
 
+    .search-icon {
+      height: 26px;
+      width: 26px;
+      cursor: pointer;
+    }
+
+    .filters__global-search {
+      width: 85%;
+    }
+
+    .search-icon-holder {
+      position: absolute;
+      right: 0;
+      top: 28px;
+    }
+
+    .global-search {
+      position: relative;
+    }
+
+    .filters__custom-container--global {
+      margin: 0 0 2vh;
+    }
+
   </style>
   <template>
 
@@ -305,17 +331,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <div class="filters-main">
 
-        <div class="filters__global-search">
-          <paper-input id="GlobalSearch"
-                       type="search"
-                       label="Search in all Event fields"
-                       value="[[globalSearchValue]]">
-          </paper-input>
+        <div class="global-search">
+          <div class="filters__global-search">
+            <paper-input id="GlobalSearch"
+                         type="search"
+                         label="Search in all Event fields"
+                         value="[[globalSearchValue]]"
+                         on-search="globalSearchChanged">
+            </paper-input>
+          </div>
+          <div class="search-icon-holder">
+            <iron-icon class="search-icon" icon="search" on-tap="globalSearchChanged"></iron-icon>
+          </div>
         </div>
 
         <div class="filters__custom-search layout vertical center-justified">
-          <h1 class="self-center" hidden$="[[lastFilter]]">Custom Filters</h1>
 
+          <!-- No filters message -->
+          <div class="filters__no-filters"
+               hidden$="[[hideNoFiltersPlaceholder]]">
+            Search all fields using the input box above or press the '+' button above to add a custom filter.
+          </div>
+
+          <!-- Global Filter -->
+          <div class="filters__custom-container  filters__custom-container--global"
+               hidden$="[[hideGlobalFilter]]">
+            <h2>Global Filter</h2>
+            <paper-material>
+              <div class="filter-item layout horizontal center">
+                <div class="filter-info flex">
+                  <span class="search-value"><strong>"[[globalFilterValue]]"</strong></span>
+                  <span>in </span>
+                  <span class="search-field-value"><strong>"All Fields"</strong></span>
+                </div>
+              </div>
+            </paper-material>
+          </div>
+
+          <h2 hidden$="[[!lastFilter]]">Custom Filters</h2>
+
+          <!-- Custom Filters -->
           <div class="filters__custom-container  filters__custom-container--main"
             hidden$="[[hideCustomFilters]]">
 
@@ -368,6 +423,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </paper-material>
           </div>
 
+          <!-- Last Filter -->
           <div hidden$="[[hideCustomFilters]]" class="last-filter-condition">[[lastFilterCondition]]</div>
 
           <div class="filters__custom-container  filters__custom-container--last"
@@ -403,12 +459,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
               </div>
             </paper-material>
-          </div>
-
-          <!-- No filters message -->
-          <div class="filters__no-filters"
-               hidden$="[[hideNoFiltersPlaceholder]]">
-            Press the add button above to add a custom filter.
           </div>
         </div>
       </div>
@@ -613,6 +663,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: []
         },
 
+        globalFilterValue: {
+          type: String,
+          value: ''
+        },
+
         lastFilter: {
           type: Object,
           value: null
@@ -631,6 +686,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         lastFilterCondition: {
           type: String,
           value: ''
+        },
+
+        hideGlobalFilter: {
+          type: Boolean,
+          value: true
         },
 
         hideCustomFilters: {
@@ -824,7 +884,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (this.lastFilter) {
             this.hideNoFiltersPlaceholder = true;
           } else {
-            this.hideNoFiltersPlaceholder = false;
+
+            if (this.hideGlobalFilter) {
+              this.hideNoFiltersPlaceholder = false;
+            } else {
+              this.hideNoFiltersPlaceholder = true;
+            }
           }
         }
       },
@@ -906,7 +971,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           if (type === 'select') {
             this.$.FieldValueSelect.hidden = false;
-            console.log(this.selectedFieldFilterObject);
           } else if (type === 'regex') {
             this.$.FieldValueInput.hidden = false;
           }
@@ -963,6 +1027,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         return valid;
+      },
+
+      // Global Search Performed
+      globalSearchChanged: function() {
+
+        var filterObject = {
+          collectionName: app.config.EventsCollection.name,
+          filter: 'global',
+          value: this.$.GlobalSearch.value
+        };
+
+        this.queryBuilderActions.queryFiltersChanged(filterObject, 'update');
       },
 
       // Add a filter and pass filters Object via 'queryFiltersChanged' action
@@ -1055,11 +1131,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Remove filter from collection
       removeFilter: function(event) {
 
-        var index = 0;
+        var index = 1;
 
-        // If Last Filter can leave the index as 0
+        // If Last Filter can leave the index as 1
+        // Adding 1 to index as global filter is always index 0
         if (event.currentTarget.dataset.index) {
-          index = JSON.parse(event.currentTarget.dataset.index);
+          index = JSON.parse(event.currentTarget.dataset.index) + 1;
         }
 
         this.queryBuilderActions.queryFiltersChanged(index, 'remove');
@@ -1261,17 +1338,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.customFilters = [];
 
         // If Removing last filter
-        if (queryBuilderStore.queryObject.filters.length === 0) {
+        if (queryBuilderStore.queryObject.filters.length === 1) {
           this.lastFilter = null;
           this.setLastFilterValues();
         }
 
         queryBuilderStore.queryObject.filters.forEach(function(queryObject, index) {
 
+          // Set global filter
+          if (queryObject.filter === 'global') {
+            this.globalFilterValue = queryObject.value;
+
+            if (this.globalFilterValue) {
+              this.hideGlobalFilter = false;
+            } else {
+              this.hideGlobalFilter = true;
+            }
+            return;
+          }
+
           // Add last filter to lastFilter array
           if (index === queryBuilderStore.queryObject.filters.length - 1) {
             this.lastFilter = queryObject;
             this.setLastFilterValues();
+            return;
           } else {
             this.push('customFilters', queryObject);
           }
@@ -1293,13 +1383,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           switch(lastFilter.andOrNot) {
             case 'and':
               return 'AND';
-              break;
             case 'or':
               return 'OR';
-              break;
             case 'not':
               return 'BUT NOT';
-              break;
             default:
               return '';
           }

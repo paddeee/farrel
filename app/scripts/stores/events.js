@@ -169,6 +169,10 @@ module.exports = Reflux.createStore({
       filters: [
       {
         type: 'where',
+        value: '[%lktxp]globalQuery'
+      },
+      {
+        type: 'where',
         value: '[%lktxp]filterQueries'
       },
       {
@@ -180,6 +184,7 @@ module.exports = Reflux.createStore({
         property: '$loki',
         desc: false
       },
+      globalQuery: [],
       filterQueries: [],
       dateQueries: {
         from: [],
@@ -228,9 +233,49 @@ module.exports = Reflux.createStore({
 
     // Transform Params to be used in collection chain transforms
     this.params = {
+      globalQuery: this.globalQuery,
       filterQueries: this.filterQueries,
       filterDates: this.filterDates
     };
+  },
+
+  // Create a loki 'where' query based on global search term selected by user
+  globalQuery: function(obj) {
+
+    var globalQueryArray = this.filterTransform[this.collectionName].globalQuery;
+    var globalQuery = '';
+    var or = '';
+
+    if (!globalQueryArray.length) {
+      return true;
+    }
+
+    _.keys(obj).forEach(function(key) {
+
+      config.EventsCollection.fields.forEach(function(field, index) {
+
+        if (index > 0) {
+          or = ' || ';
+        }
+
+        if (field.name === key && field.display === 'true') {
+
+          // If the field is empty in database
+          if (!obj[field.name]) {
+            globalQuery =  globalQuery + or + 'false';
+            return;
+          }
+
+          globalQuery = globalQuery + or + !!obj[field.name].match(globalQueryArray[0].$regex);
+        }
+      });
+    });
+
+    // ToDo: Eval is evil and all that. However, I don't know of a better way to dynamically create an if statement.
+    // Change if there is a way to do this without eval.
+    if (eval(globalQuery)) {
+      return true;
+    }
   },
 
   // Create a loki 'where' query based on filters selected by user

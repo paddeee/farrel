@@ -123,7 +123,10 @@ module.exports = Reflux.createStore({
     this.queryObject = {
       packageName: this.packageName,
       globalSearchValue: '',
-      filters: []
+      filters: [{
+        filter: 'global',
+        value: ''
+      }]
     };
 
     queryObjectToClone = this.cloneDocument(this.queryObject, false);
@@ -241,6 +244,18 @@ module.exports = Reflux.createStore({
     this.manageContainsEventFilters();
   },
 
+  // Update global filter value
+  updateGlobalFilter: function(globalFilter) {
+
+    this.queryObject.filters[0].value = globalFilter.value;
+
+    if (globalFilter.value === '') {
+      this.removeFilterWithValues(globalFilter);
+    } else {
+      this.addFilterWithValues(globalFilter);
+    }
+  },
+
   // See whether to add an object to filtersWithValues
   addFilterWithValues: function(filterToAdd) {
 
@@ -249,7 +264,12 @@ module.exports = Reflux.createStore({
     // Check to see if filter already exists
     this.filtersWithValues.forEach(function(filterObject) {
 
-      if (filterToAdd.name === filterObject.fieldName && filterToAdd.value === filterObject.value) {
+      if (filterToAdd.filter === 'global' && filterObject.filter === 'global') {
+        filterExists = true;
+        return;
+      }
+
+      if (filterToAdd.fieldName === filterObject.fieldName && filterToAdd.value === filterObject.value) {
         filterExists = true;
       }
     }.bind(this));
@@ -261,6 +281,11 @@ module.exports = Reflux.createStore({
 
   // See whether to remove an object from filtersWithValues
   updateFilterWithValues: function(updatedFilter) {
+
+    if (updatedFilter.filter === 'global') {
+      this.updateGlobalFilter(updatedFilter);
+      return;
+    }
 
     if (updatedFilter.value === '') {
       this.removeFilterWithValues(updatedFilter);
@@ -277,6 +302,10 @@ module.exports = Reflux.createStore({
     tempFilterWithValues = this.filtersWithValues.filter(function(filterObject) {
 
       var validItem = false;
+
+      if (filterObject.filter === 'global') {
+        return validItem;
+      }
 
       if (filterToRemove.fieldName !== filterObject.fieldName || filterToRemove.value !== filterObject.value) {
         validItem = true;

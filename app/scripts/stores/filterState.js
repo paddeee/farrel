@@ -103,14 +103,14 @@ module.exports = Reflux.createStore({
     var eventsTransform = eventsStore.filterTransform[eventsName];
 
     // Reset transform filters array and date arrays
+    eventsTransform.globalQuery = [];
     eventsTransform.filterQueries = [];
     eventsTransform.dateQueries.from = [];
     eventsTransform.dateQueries.to = [];
 
     filters.forEach(function (field) {
 
-      // If the field is an input or a select box
-      if (field.filter === 'regex' || field.filter === 'select') {
+      if (field.filter === 'regex' || field.filter === 'select' || field.filter === 'global') {
         this.setQueriesArray(eventsTransform, field);
 
         // If field is a date
@@ -126,8 +126,13 @@ module.exports = Reflux.createStore({
     // If date is populated
     if (field.value) {
 
-      // Perform partial search on text input and full word search on select drop down
-      if (field.filter === 'regex') {
+      if (field.filter === 'global') {
+        field.$regex = new RegExp('^(.*' + field.value + ')', 'i');
+        transformObject.globalQuery.push(field);
+        return;
+
+        // Perform partial search on text input and full word search on select drop down
+      } else if (field.filter === 'regex') {
         if (field.andOrNot === 'and' || field.andOrNot === 'or') {
           field.$regex = new RegExp('^(.*' + field.value + ')', 'i');
         } else if (field.andOrNot === 'not') {
