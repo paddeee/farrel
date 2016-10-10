@@ -311,8 +311,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       position: relative;
     }
 
-    .filters__custom-container--global {
+    .filters__custom-container {
       margin: 0 0 2vh;
+    }
+
+    .filter-item--date:not(:first-child) {
+      border-top: 1px solid var(--divider-color);
     }
 
   </style>
@@ -368,9 +372,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </paper-material>
           </div>
 
-          <h2 hidden$="[[!lastFilter]]">Custom Filters</h2>
+          <!-- Date Filters -->
+          <div class="filters__custom-container  filters__custom-container--main"
+               hidden$="[[hideDateFilters]]">
+            <h2 hidden$="[[hideDateFilters]]">Date Filters</h2>
+
+            <paper-material>
+
+              <template id="DateFiltersTemplate"
+                        is="dom-repeat"
+                        items="[[dateFilters]]">
+
+                <div class="filter-item filter-item--date layout horizontal center">
+
+                  <div class="filter-info flex">Where
+                    <span class="search-field-value"><strong>"[[getHeadingName(item.fieldName)]]"</strong></span>
+                    <span hidden$="[[hideIncludeFilter(item)]]"
+                          class="include-exclude">is <strong>after</strong> </span>
+                  <span hidden$="[[hideExcludeFilter(item)]]"
+                        class="include-exclude">is <strong>before</strong> </span>
+                    <span class="search-value"><strong>"[[getFilterDateTime(item.value)]]"</strong></span>
+                  </div>
+
+                  <div class="filter-container-icons layout horizontal">
+                    <paper-icon-button id="EditFilter"
+                                       class="edit-filter"
+                                       icon="create"
+                                       on-tap="editFilter"
+                                       data-index$="[[index]]"></paper-icon-button>
+                    <paper-icon-button id="RemoveFilter"
+                                       class="remove-filter"
+                                       icon="remove-circle"
+                                       on-tap="removeFilter"
+                                       data-index$="[[index]]"></paper-icon-button>
+                    <paper-tooltip for="EditFilter" position="top">
+                      Edit Filter
+                    </paper-tooltip>
+                    <paper-tooltip for="RemoveFilter" position="top">
+                      Remove Filter
+                    </paper-tooltip>
+                  </div>
+                </div>
+              </template>
+            </paper-material>
+          </div>
 
           <!-- Custom Filters -->
+          <h2 hidden$="[[!lastFilter]]">Custom Filters</h2>
+
           <div class="filters__custom-container  filters__custom-container--main"
             hidden$="[[hideCustomFilters]]">
 
@@ -559,8 +608,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             query-type="[[[selectedFieldFilterObject.filter]]"
             date="[[getFilterDate(selectedFieldFilterObject.value)]]"
             time="[[getFilterTime(selectedFieldFilterObject.value)]]"
-            hidden="true"
-            on-user-entered-date-time="userDateChanged"></epe-date-time-picker>
+            hidden="true"></epe-date-time-picker>
 
         </div>
 
@@ -658,6 +706,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: ''
         },
 
+        dateFilters: {
+          type: Array,
+          value: []
+        },
+
         customFilters: {
           type: Array,
           value: []
@@ -689,6 +742,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         hideGlobalFilter: {
+          type: Boolean,
+          value: true
+        },
+
+        hideDateFilters: {
           type: Boolean,
           value: true
         },
@@ -829,6 +887,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
               // Decide whether to show No custom filters message
               this.showHideCustomFilters();
+
+              // Decide whether to show No custom filters message
+              this.showHideDateFilters();
             }
           }.bind(this));
         }
@@ -848,13 +909,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      // Iterate through keys of an object and return key/value pair
-      toArray: function(obj) {
-        return Object.keys(obj).map(function(key) {
-          return {name: key, value: obj[key]};
-        });
-      },
-
       // Hide filters editor
       hideFilters: function() {
         this.showFilters = false;
@@ -872,7 +926,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      // If custom filters is empty set hideCustomFilters to false
+      // If date filters is empty set hideDateFilters to true
+      showHideDateFilters: function() {
+
+        if (this.dateFilters && this.dateFilters.length > 0) {
+          this.hideDateFilters = false;
+          this.hideNoFiltersPlaceholder = true;
+        } else {
+          this.hideDateFilters = true;
+
+          if (this.hideGlobalFilter) {
+            this.hideNoFiltersPlaceholder = false;
+          } else {
+            this.hideNoFiltersPlaceholder = true;
+          }
+        }
+      },
+
+      // If custom filters is empty set hideCustomFilters to true
       showHideCustomFilters: function() {
 
         if (this.customFilters && this.customFilters.length > 0) {
@@ -931,6 +1002,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Set AND/OR/NOT value
         this.setAndOrNotButton(this.selectedFieldFilterObject.andOrNot);
+
+        // Set Include/Exclude Radio button
+        this.$.IncludeExclude.selected = fieldItem.includeExclude;
 
         // Show/Hide AND/OR/NOT
         if (event.model && event.model.index === 0) {
@@ -1097,6 +1171,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value = this.$.FieldValueInput.value;
         } else if (filterItem.filter === 'select') {
           value = this.$.FieldValueListBox.selected || '';
+        } else if (filterItem.filter === 'gte' || filterItem.filter === 'lte') {
+          value = this.$.FieldValueDatePicker.dateTime;
         }
 
         return value;
@@ -1120,12 +1196,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       // CALLED IN TEMPLATE TO HIDE NON RELEVANT INCLUDE/EXCLUDE FILTER MESSAGES
-      showIncludeExcludeFilter: function(elementType, includeExcludeType) {
+      hideIncludeFilter: function(item) {
 
-        if (elementType === includeExcludeType) {
-          return true;
+        if (item.includeExclude === 'include') {
+          if (item.filter === 'gte') {
+            return false;
+          } else if (item.filter === 'lte') {
+            return true;
+          }
+        } else if (item.includeExclude === 'exclude') {
+          if (item.filter === 'gte') {
+            return true;
+          } else if (item.filter === 'lte') {
+            return false;
+          }
         }
-        return false;
+      },
+
+      // CALLED IN TEMPLATE TO HIDE NON RELEVANT INCLUDE/EXCLUDE FILTER MESSAGES
+      hideExcludeFilter: function(item) {
+
+        if (item.includeExclude === 'include') {
+          if (item.filter === 'lte') {
+            return false;
+          } else if (item.filter === 'gte') {
+            return true;
+          }
+        } else if (item.includeExclude === 'exclude') {
+          if (item.filter === 'gte') {
+            return false;
+          } else if (item.filter === 'lte') {
+            return true;
+          }
+        }
       },
 
       // Remove filter from collection
@@ -1143,6 +1246,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       // Get date for date picker
+      getFilterDateTime: function(value) {
+
+        if (!value || value === '1900-01-01 00:00:00') {
+          return '1900-01-01 00:00:00';
+        } else if (value === '2100-12-31 00:00:00') {
+          return '2100-12-31 00:00:00';
+        } else {
+          return moment(value).format('h:mm:ss a on Do MMMM YYYY');
+        }
+      },
+
+      // Get date for date picker
       getFilterDate: function(value) {
 
         if (!value || value === '1900-01-01 00:00:00') {
@@ -1150,21 +1265,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         } else if (value === '2100-12-31 00:00:00') {
           return '2100-12-31';
         } else {
-          return this.toArray(value)[0].value.split(' ')[0];
+          return value.split(' ')[0];
         }
       },
 
       // Get time for date picker
       getFilterTime: function(value) {
 
-
         if (!value || value === '1900-01-01 00:00:00' || value === '2100-12-31 00:00:00') {
           return '00:00:00';
         } else {
-          return this.toArray(value)[0].value.split(' ')[1];
+          return value.split(' ')[1];
         }
         if (value) {
-          return this.toArray(value)[0].value.split(' ')[1];
+          return value.split(' ')[1];
         } else {
           return '00:00:00';
         }
@@ -1337,6 +1451,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
         this.customFilters = [];
 
+        // Set Date Filters - Need to set array to empty so observable will pick up change to dateFilters array
+        this.dateFilters = [];
+
         // If Removing last filter
         if (queryBuilderStore.queryObject.filters.length === 1) {
           this.lastFilter = null;
@@ -1357,6 +1474,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return;
           }
 
+          if (queryObject.filter === 'gte' || queryObject.filter === 'lte') {
+            this.push('dateFilters', queryObject);
+            return;
+          }
+
           // Add last filter to lastFilter array
           if (index === queryBuilderStore.queryObject.filters.length - 1) {
             this.lastFilter = queryObject;
@@ -1368,10 +1490,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }.bind(this));
 
         // Manually stamp array to template as I can't seem to grasp how polymer updates repeat templates automatically
+        this.$.DateFiltersTemplate.items = [];
         this.$.FiltersTemplate.items = [];
 
         this.async(function() {
           this.$.FiltersTemplate.items = this.customFilters;
+          this.$.DateFiltersTemplate.items = this.dateFilters;
         });
       },
 
@@ -1414,7 +1538,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       },
 
-      // When a user types in an Add filter text field. If return key, add the filtet
+      // When a user types in an Add filter text field. If return key, add the filter
       textFieldTyped: function(event) {
 
         var $addFilterButton = this.$.AddFilterButton;
