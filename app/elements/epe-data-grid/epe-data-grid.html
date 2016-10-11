@@ -696,13 +696,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // CALLED BY OBSERVABLE ON GRIDDATA
       gridDataChanged: function() {
 
+        var pageLimit = this.$.Paginator.currentpage ? this.$.Paginator.currentpage * this.perPage : 0;
+
         if (this.gridData) {
 
           // This is the column headings
           this.gridDataFirstRecord = this.gridData[0];
 
           // If we are on a page which doesn't exist anymore due to filters, jump to first page
-          if (this.gridData.length / this.$.Paginator.currentpage + 1 < this.perPage) {
+          if (this.gridData.length <= pageLimit) {
             this.$.Paginator.currentpage = 0;
           }
 
