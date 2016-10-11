@@ -113,6 +113,11 @@ module.exports = Reflux.createStore({
   packageSelected: function (packageName) {
     this.packageName = packageName;
     this.getQuery();
+
+    // Add each filter into the filterWithValues Array
+    this.queryObject.filters.forEach(function(filterObject) {
+      this.addFilterWithValues(filterObject);
+    }.bind(this));
   },
 
   // Create a default query object
@@ -345,11 +350,8 @@ module.exports = Reflux.createStore({
 
     var containsEvents = false;
 
-    this.filtersWithValues.forEach(function(filter) {
-
-      if (filter.collectionName === config.EventsCollection.name) {
-        containsEvents = true;
-      }
+    this.filtersWithValues.forEach(function() {
+      containsEvents = true;
     });
 
     this.containsEvents = containsEvents;

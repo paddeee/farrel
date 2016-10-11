@@ -1134,7 +1134,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       globalSearchChanged: function() {
 
         var filterObject = {
-          collectionName: app.config.EventsCollection.name,
           filter: 'global',
           value: this.$.GlobalSearch.value
         };
@@ -1151,7 +1150,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var item = JSON.parse(this.$.AddFieldList.selectedItem.getAttribute('value'));
 
           var filterObject = {
-            collectionName: app.config.EventsCollection.name,
             fieldName: item.name,
             filter: item.filter,
             filterValues: item.filterValues,
