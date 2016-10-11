@@ -312,17 +312,19 @@ module.exports = Reflux.createStore({
 
     tempFilterWithValues = this.filtersWithValues.filter(function(filterObject) {
 
-      var validItem = false;
-
-      if (filterObject.filter === 'global') {
-        return validItem;
+      if (filterToRemove.filter === 'global' && filterToRemove.filter === filterObject.filter) {
+        if (filterToRemove.value === '') {
+          return false;
+        } else {
+          return true;
+        }
       }
 
-      if (filterToRemove.fieldName !== filterObject.fieldName || filterToRemove.value !== filterObject.value) {
-        validItem = true;
+      if (filterToRemove.fieldName === filterObject.fieldName && filterToRemove.value === filterObject.value) {
+        return false;
       }
 
-      return validItem;
+      return true;
     }.bind(this));
 
     this.filtersWithValues = tempFilterWithValues;
