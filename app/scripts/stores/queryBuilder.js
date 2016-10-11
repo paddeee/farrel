@@ -211,9 +211,20 @@ module.exports = Reflux.createStore({
       };
     } else if (action === 'remove') {
 
-      var deletedFilter = this.queryObject.filters.splice(arg, 1)[0];
+      this.queryObject.filters = this.queryObject.filters.filter(function(filterObject) {
 
-      this.manageFiltersWithValues(deletedFilter, 'remove');
+        if (filterObject.filter === 'global') {
+          return true;
+        }
+
+        if (arg.fieldName === filterObject.fieldName && arg.value === filterObject.value) {
+          return false;
+        }
+
+        return true;
+      }.bind(this));
+
+      this.manageFiltersWithValues(arg, 'remove');
 
       this.message = {
         type: 'queryUpdated' + broadcastMessage

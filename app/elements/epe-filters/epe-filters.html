@@ -404,7 +404,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                        class="remove-filter"
                                        icon="remove-circle"
                                        on-tap="removeFilter"
-                                       data-index$="[[index]]"></paper-icon-button>
+                                       data-filter$="[[item]]"></paper-icon-button>
                     <paper-tooltip for="EditFilter" position="top">
                       Edit Filter
                     </paper-tooltip>
@@ -459,7 +459,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                        class="remove-filter"
                                        icon="remove-circle"
                                        on-tap="removeFilter"
-                                       data-index$="[[index]]"></paper-icon-button>
+                                       data-filter$="[[item]]"></paper-icon-button>
                     <paper-tooltip for="EditFilter" position="top">
                       Edit Filter
                     </paper-tooltip>
@@ -498,7 +498,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                      class="remove-filter"
                                      icon="remove-circle"
                                      on-tap="removeFilter"
-                                     data-index$="[[index]]"></paper-icon-button>
+                                     last-filter="true"></paper-icon-button>
                   <paper-tooltip for="EditFilter" position="top">
                     Edit Filter
                   </paper-tooltip>
@@ -1002,6 +1002,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Set AND/OR/NOT value
         this.setAndOrNotButton(this.selectedFieldFilterObject.andOrNot);
+        this.andOrNotSelectedValue = this.selectedFieldFilterObject.andOrNot;
 
         // Set Include/Exclude Radio button
         this.$.IncludeExclude.selected = fieldItem.includeExclude;
@@ -1234,15 +1235,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Remove filter from collection
       removeFilter: function(event) {
 
-        var index = 1;
+        var filterObject;
 
-        // If Last Filter can leave the index as 1
-        // Adding 1 to index as global filter is always index 0
-        if (event.currentTarget.dataset.index) {
-          index = JSON.parse(event.currentTarget.dataset.index) + 1;
+        if (event.currentTarget.getAttribute('last-filter')) {
+          filterObject = this.lastFilter;
+        } else {
+          filterObject = JSON.parse(event.currentTarget.dataset.filter);
         }
 
-        this.queryBuilderActions.queryFiltersChanged(index, 'remove');
+        this.queryBuilderActions.queryFiltersChanged(filterObject, 'remove');
       },
 
       // Get date for date picker
@@ -1448,46 +1449,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // For display purposes need to group filters into dates, mainQuery and lastFilter groups
       createFilterGroups: function(queryBuilderStore) {
 
+        var dateFiltersArray = queryBuilderStore.queryObject.filters.filter(function(filterObject) {
+          return filterObject.filter === 'lte' || filterObject.filter === 'gte';
+        });
+
+        var customFiltersArray = queryBuilderStore.queryObject.filters.filter(function(filterObject) {
+          return filterObject.filter === 'regex' || filterObject.filter === 'select';
+        });
+
         // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
         this.customFilters = [];
 
         // Set Date Filters - Need to set array to empty so observable will pick up change to dateFilters array
         this.dateFilters = [];
 
-        // If Removing last filter
-        if (queryBuilderStore.queryObject.filters.length === 1) {
-          this.lastFilter = null;
-          this.setLastFilterValues();
+        //Assign Global filter
+        this.globalFilterValue = queryBuilderStore.queryObject.filters.filter(function(filterObject) {
+          return filterObject.filter === 'global';
+        })[0].value;
+
+        if (this.globalFilterValue) {
+          this.hideGlobalFilter = false;
+        } else {
+          this.hideGlobalFilter = true;
         }
 
-        queryBuilderStore.queryObject.filters.forEach(function(queryObject, index) {
+        // Assign Custom Filters
 
-          // Set global filter
-          if (queryObject.filter === 'global') {
-            this.globalFilterValue = queryObject.value;
+        // If Removing last filter
+        if (!customFiltersArray.length) {
+           this.lastFilter = null;
+           this.setLastFilterValues();
+        }
 
-            if (this.globalFilterValue) {
-              this.hideGlobalFilter = false;
-            } else {
-              this.hideGlobalFilter = true;
-            }
-            return;
-          }
-
-          if (queryObject.filter === 'gte' || queryObject.filter === 'lte') {
-            this.push('dateFilters', queryObject);
-            return;
-          }
+        customFiltersArray.forEach(function(filterObject, index) {
 
           // Add last filter to lastFilter array
-          if (index === queryBuilderStore.queryObject.filters.length - 1) {
-            this.lastFilter = queryObject;
+          if (index === customFiltersArray.length - 1) {
+            this.lastFilter = filterObject;
             this.setLastFilterValues();
             return;
           } else {
-            this.push('customFilters', queryObject);
+            this.push('customFilters', filterObject);
           }
         }.bind(this));
+
+        // Assign Date filters
+        this.dateFilters = dateFiltersArray;
 
         // Manually stamp array to template as I can't seem to grasp how polymer updates repeat templates automatically
         this.$.DateFiltersTemplate.items = [];
