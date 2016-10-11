@@ -707,14 +707,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // Decide whether to hide the checkboxes
           this.hideCheckboxes();
 
-          // Force template-repeat to show checkboxes in correct state after the
-          // select all checkbox has been changed
-          if (this.selectAllRecordsChanged) {
-            this.updateCheckboxes();
-          }
+          this.manageSelectAllCheckbox();
 
-          // Reset flag
-          this.selectAllRecordsChanged = false;
+          // Force template-repeat to show checkboxes in correct state
+          this.updateCheckboxes();
+        }
+      },
+
+      //
+      manageSelectAllCheckbox: function() {
+
+        var selectAllChecked = true;
+
+        this.gridData.forEach(function(dataItem) {
+
+          // If the checkbox in the DOM template has the same data model as the gridData item
+          if (!dataItem.showRecord) {
+            selectAllChecked = false;
+          }
+        }.bind(this));
+
+        if (selectAllChecked) {
+          this.$.SelectAllCheckbox.active = true;
+        } else {
+          this.$.SelectAllCheckbox.active = false;
         }
       },
 
@@ -961,11 +977,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // FIRED BY USER SELECTING CHECKBOXHOLDER: Select all checkboxes in list
       selectAllRecords: function(event) {
 
+        if (event.type === 'iron-change') {
+          return;
+        }
+
         if (this.gridData) {
 
           console.time('allRecords');
-
-          this.selectAllRecordsChanged = true;
 
           // Update all items in the data collection
           this.gridData.forEach(function() {
