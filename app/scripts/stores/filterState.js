@@ -54,7 +54,7 @@ module.exports = Reflux.createStore({
       this.selectSelectedRecords(queryBuilderStore.packageName);
       this.autoFilterCollections(false, true, true);
     } else if (queryBuilderStore.message.type === 'queryUpdatedPackageSelected') {
-      this.autoFilterCollections(false, true, true);
+      this.autoFilterCollections(true, true, true);
     } else if (queryBuilderStore.message.type === 'queryAdded' || queryBuilderStore.message.type === 'queryUpdated') {
       this.autoFilterCollections(true, true, true);
     } else if (queryBuilderStore.message.type === 'creatingSelected') {
