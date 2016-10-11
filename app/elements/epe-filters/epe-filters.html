@@ -17,6 +17,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       display: block;
     }
 
+    .filters-main::-webkit-scrollbar {
+      background-color: whitesmoke;
+    }
+
     .filters {
       box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
       padding: 50px 0 0;
@@ -134,6 +138,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     .filters__no-filters {
       font-size: 12px;
       text-align: center;
+    }
+
+    .filters__results {
+      margin: 2vh 0 1vh;
+      font-size: 14px;
+      font-style: italic;
+      text-align: center;
+    }
+
+    .results__number {
+      font-weight: bold;
     }
 
     .add-filter-dialog {
@@ -355,6 +370,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div class="filters__no-filters"
                hidden$="[[hideNoFiltersPlaceholder]]">
             Search all fields using the input box above or press the '+' button above to add a custom filter.
+          </div>
+
+          <!-- Filter Results -->
+          <div class="filters__results"
+               hidden$="[[hideFilterResults]]">
+            <span>Showing <span class="results__number">[[eventsData.length]]</span> of </span>
+            <span class="results__number">[[totalEvents]]</span>
+            <span>Events</span>
           </div>
 
           <!-- Global Filter -->
@@ -741,6 +764,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: ''
         },
 
+        hideFilterResults: {
+          type: Boolean,
+          value: true
+        },
+
         hideGlobalFilter: {
           type: Boolean,
           value: true
@@ -801,6 +829,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         editingFilter: {
           type: Boolean,
           value: false
+        },
+
+        totalEvents: {
+          type: String,
+          value: '0'
         },
 
         animationConfig: {
@@ -1497,6 +1530,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Assign Date filters
         this.dateFilters = dateFiltersArray;
 
+        // Whether to show number of results
+        this.showHideResultsNumber();
+
         // Manually stamp array to template as I can't seem to grasp how polymer updates repeat templates automatically
         this.$.DateFiltersTemplate.items = [];
         this.$.FiltersTemplate.items = [];
@@ -1505,6 +1541,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.FiltersTemplate.items = this.customFilters;
           this.$.DateFiltersTemplate.items = this.dateFilters;
         });
+      },
+
+      // Whether to show number of results
+      showHideResultsNumber: function() {
+
+        if (this.lastFilter || this.dateFilters.length || this.globalFilterValue) {
+          this.hideFilterResults = false;
+        } else {
+          this.hideFilterResults = true;
+        }
       },
 
       // Return condition of Last Filter AND/OR/NOT

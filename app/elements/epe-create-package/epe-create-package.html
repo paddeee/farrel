@@ -207,6 +207,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        eventsData: {
+          type: Array,
+          notify: true
+        },
+
+        totalEvents: {
+          type: Number,
+          notify: true
+        },
+
         gridData: {
           type: Array
         },
@@ -257,6 +267,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.eventsStore.listen(function(eventsData) {
 
             this.eventsData = eventsData;
+
+            // Retrieve Total Number of Events
+            this.getTotalEvents();
 
             if (this.params) {
 
@@ -504,6 +517,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // When the TimeLine Updates
       timeLineUpdated: function() {
         this.fire('hide-select-all-dialog');
+      },
+
+      // Set total number of events the first time the eventsData is set
+      getTotalEvents: function() {
+
+        if (!this.totalEvents) {
+          if (this.eventsData) {
+            this.totalEvents = this.eventsData.length;
+          }
+        }
       }
     });
   })();
