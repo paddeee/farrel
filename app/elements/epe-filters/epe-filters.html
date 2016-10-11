@@ -1481,16 +1481,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return filterObject.filter === 'regex' || filterObject.filter === 'select';
         });
 
+        var globalFilterValue = queryBuilderStore.queryObject.filters.filter(function(filterObject) {
+          return filterObject.filter === 'global';
+        });
+
         // Set Custom Filters - Need to set array to empty so observable will pick up change to customFilters array
         this.customFilters = [];
 
         // Set Date Filters - Need to set array to empty so observable will pick up change to dateFilters array
         this.dateFilters = [];
 
-        //Assign Global filter
-        this.globalFilterValue = queryBuilderStore.queryObject.filters.filter(function(filterObject) {
-          return filterObject.filter === 'global';
-        })[0].value;
+        // Set Global filter
+        if (globalFilterValue.length) {
+          this.globalFilterValue = globalFilterValue[0].value;
+        }
 
         if (this.globalFilterValue) {
           this.hideGlobalFilter = false;

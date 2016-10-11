@@ -698,11 +698,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (this.gridData) {
 
-          // Reset Pagination to first page on collection name changing
-          this.$.Paginator.currentpage = 0;
-
           // This is the column headings
           this.gridDataFirstRecord = this.gridData[0];
+
+          // If we are on a page which doesn't exist anymore due to filters, jump to first page
+          if (this.gridData.length / this.$.Paginator.currentpage + 1 < this.perPage) {
+            this.$.Paginator.currentpage = 0;
+          }
 
           // Decide whether to hide the checkboxes
           this.hideCheckboxes();
