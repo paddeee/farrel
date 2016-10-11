@@ -355,7 +355,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-input id="GlobalSearch"
                          type="search"
                          label="Search in all Event fields"
-                         value="[[globalSearchValue]]"
+                         value="[[globalFilterValue]]"
                          on-search="globalSearchChanged">
             </paper-input>
           </div>
@@ -724,11 +724,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: false
         },
 
-        globalSearchValue:  {
-          type: String,
-          value: ''
-        },
-
         dateFilters: {
           type: Array,
           value: []
@@ -913,8 +908,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             // Set Global Search Value
             if (queryBuilderStore.queryObject) {
-
-              this.globalSearchValue = queryBuilderStore.queryObject.globalSearchValue;
 
               this.createFilterGroups(queryBuilderStore);
 
