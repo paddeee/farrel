@@ -708,6 +708,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.hideCheckboxes();
 
           this.manageSelectAllCheckbox();
+
+          // Force template-repeat to show checkboxes in correct state
+          this.updateCheckboxes();
         }
       },
 
