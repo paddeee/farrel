@@ -37,10 +37,10 @@ var screenActions = require('./actions/screen.js');
 var screenStore = appMode === 'app' ? require('./stores/screen.js') : null;
 var mapGeoJsonStore = require('./stores/mapGeoJSON.js');
 var timeLineStore = require('./stores/timeLine.js');
-var wc = appMode === 'app' ? window.electronRequire('wcjs-prebuilt') : null;
-var wcRenderer = appMode === 'app' ? require('webgl-video-renderer') : null;
+var webChimera = appMode === 'app' ? window.electronRequire('wcjs-prebuilt') : null;
+var webChimeraPlayer = appMode === 'app' ? window.electronRequire('wcjs-player') : null;
 
-(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, wc, wcRenderer) {
+(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimera, webChimeraPlayer) {
   'use strict';
 
   // Grab a reference to our auto-binding template
@@ -83,8 +83,8 @@ var wcRenderer = appMode === 'app' ? require('webgl-video-renderer') : null;
   app.sourceStore = sourceStore;
   app.mapGeoJsonStore = mapGeoJsonStore;
   app.timeLineStore = timeLineStore;
-  app.wc = wc;
-  app.wcRenderer = wcRenderer;
+  app.webChimera = webChimera;
+  app.webChimeraPlayer = webChimeraPlayer;
 
   app.displayInstalledToast = function() {
     document.querySelector('#caching-complete').show();
@@ -128,4 +128,4 @@ var wcRenderer = appMode === 'app' ? require('webgl-video-renderer') : null;
   // Maybe dangerous but can change for different approach if needed
   NodeList.prototype.forEach = Array.prototype.forEach;
 
-})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, wc, wcRenderer);
+})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimera, webChimeraPlayer);

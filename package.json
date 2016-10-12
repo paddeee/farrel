@@ -85,7 +85,7 @@
     "raw-body": "^2.1.7",
     "reflux": "^0.2.10",
     "ssf": "^0.8.2",
-    "webgl-video-renderer": ">=0.2.0",
+    "wcjs-player": "^6.0.1",
     "winston": "^2.2.0"
   }
 }

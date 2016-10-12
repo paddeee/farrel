@@ -149,14 +149,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           pointer-events="[[pointerEvents]]"
           hidden></epe-annotations>
 
-        <canvas id="VideoCanvas"/>
-
         <audio id="Audio"
                class="audio-player video-js vjs-default-skin vjs-big-play-centered"
                controls
                preload="auto"
                hidden></audio>
       </div>
+
+      <div id="VideoCanvas"/>
 
       <!-- Media Footer -->
       <div id="MediaFooter" class="media__footer relative horizontal layout center center-justified">
@@ -314,9 +314,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var $audioContainer;
         var $videoElement;
 
-        var videoCanvas = document.getElementById('VideoCanvas');
-        var renderContext = app.wcRenderer.setupCanvas(videoCanvas);
-        var videoPlayer = app.wc.createPlayer();
+        var videoPlayer;
 
         if (this.videoPlayer) {
           this.videoPlayer.dispose();
@@ -325,16 +323,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Set the src of the image if inside Electron
         if (appMode === 'app') {
 
+          videoPlayer = new app.webChimeraPlayer('#VideoCanvas').addPlayer({
+            autoplay: false,
+            wcjs: app.webChimera
+            // OR
+            // wcjs: require('webchimera.js')
+            // OR
+            // wcjs: require([path-to-Webchimera.js.node-file])
+          });
+
           // AVI Player
           videoPlayer.onLogMessage = function(level, message, format) {
             console.log(message, format);
           };
 
-          videoPlayer.onFrameReady = function(frame) {
-            renderContext.render(frame, frame.width, frame.height, frame.uOffset, frame.vOffset);
-          };
-
-          videoPlayer.play('file:///Users/ODonnell/SITF/SITFSource/video/Silicon.Valley.S02E01.avi');
+          videoPlayer.addPlaylist('file:///Users/ODonnell/SITF/SITFSource/video/Silicon.Valley.S02E01.avi');
 
           // Use roles to determine if on network on offline
           if (presentationMode === 'online') {
