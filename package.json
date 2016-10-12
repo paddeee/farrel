@@ -1,5 +1,6 @@
 {
   "private": true,
+  "main": "",
   "devDependencies": {
     "bcrypt": "^0.8.5",
     "browser-sync": "^2.10.1",
@@ -58,7 +59,7 @@
     "arch": "x64",
     "platform": "osx",
     "runtime": "electron",
-    "runtimeVersion": "v1.3.3",
+    "runtimeVersion": "v1.4.0",
     "version": "v0.2.6"
   },
   "scripts": {
@@ -84,6 +85,7 @@
     "raw-body": "^2.1.7",
     "reflux": "^0.2.10",
     "ssf": "^0.8.2",
+    "webgl-video-renderer": ">=0.2.0",
     "winston": "^2.2.0"
   }
 }

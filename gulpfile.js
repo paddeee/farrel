@@ -209,7 +209,7 @@ gulp.task('npm-install', function () {
 
   var npmInstallPromise = new Promise(function (resolve, reject) {
 
-    exec('cd dist && npm install', function (error, stdout, stderr) {
+    exec('cd dist && npm install && npm install wcjs-prebuilt', function (error, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
 
