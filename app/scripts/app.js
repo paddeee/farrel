@@ -40,7 +40,7 @@ var timeLineStore = require('./stores/timeLine.js');
 var wc = appMode === 'app' ? window.electronRequire('webchimera.js') : null;
 var vlcPlayer = appMode === 'app' ? wc.createPlayer() : null;
 
-(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, vlcPlayer) {
+(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, wc, vlcPlayer) {
   'use strict';
 
   // Grab a reference to our auto-binding template
@@ -83,6 +83,7 @@ var vlcPlayer = appMode === 'app' ? wc.createPlayer() : null;
   app.sourceStore = sourceStore;
   app.mapGeoJsonStore = mapGeoJsonStore;
   app.timeLineStore = timeLineStore;
+  app.wc = wc;
   app.vlcPlayer = vlcPlayer;
 
   app.displayInstalledToast = function() {
@@ -127,4 +128,4 @@ var vlcPlayer = appMode === 'app' ? wc.createPlayer() : null;
   // Maybe dangerous but can change for different approach if needed
   NodeList.prototype.forEach = Array.prototype.forEach;
 
-})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, vlcPlayer);
+})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, wc, vlcPlayer);

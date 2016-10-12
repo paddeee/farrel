@@ -23,5 +23,12 @@
     "ssf": "^0.8.2",
     "winston": "^2.2.0",
     "zip-folder": "^1.0.0"
+  },
+  "wcjs-prebuilt": {
+    "arch": "x64",
+    "platform": "osx",
+    "runtime": "electron",
+    "runtimeVersion": "v1.4.0",
+    "version": "v0.2.6"
   }
 }
