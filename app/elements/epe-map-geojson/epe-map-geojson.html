@@ -828,6 +828,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         } else if (this.navigatingEvents === false) {
 
+          this.navigatingEvents = true;
+
           // When changing between Display modes, any open popups will be closed
           // so call activeEventChanged to open again if necessary. In async to give
           // Leaflet chance to add the markers to the DOM
