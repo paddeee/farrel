@@ -314,8 +314,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var $audioContainer;
         var $videoElement;
 
-        var videoPlayer;
-
         if (this.videoPlayer) {
           this.videoPlayer.dispose();
         }
@@ -323,7 +321,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Set the src of the image if inside Electron
         if (appMode === 'app') {
 
-          videoPlayer = new app.webChimeraPlayer('#VideoCanvas').addPlayer({
+          this.webChimeraVideoPlayer = new app.webChimeraPlayer('#VideoCanvas').addPlayer({
             autoplay: false,
             wcjs: app.webChimera
             // OR
@@ -333,11 +331,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           // AVI Player
-          videoPlayer.onLogMessage = function(level, message, format) {
+          this.webChimeraVideoPlayer.onLogMessage = function(level, message, format) {
             console.log(message, format);
           };
 
-          videoPlayer.addPlaylist('file:///Users/ODonnell/SITF/SITFSource/video/Silicon.Valley.S02E01.avi');
+          this.webChimeraVideoPlayer.addPlaylist('file:///Users/ODonnell/SITF/SITFSource/video/Silicon.Valley.S02E01.avi');
 
           // Use roles to determine if on network on offline
           if (presentationMode === 'online') {
