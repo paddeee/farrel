@@ -156,8 +156,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                hidden></audio>
       </div>
 
-      <div id="VideoCanvas"/>
-
       <!-- Media Footer -->
       <div id="MediaFooter" class="media__footer relative horizontal layout center center-justified">
 
@@ -275,6 +273,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.fs = window.electronRequire('fs');
         }
 
+        // Choose whether using webChimera or videoJS
+        // ToDO: Remove when webChimera has fully replaced videoJS
+        if (app.config.webChimera) {
+          this.videoType = 'webChimera';
+        } else {
+          this.videoType = 'videoJS';
+        }
+
         $epeElement.addEventListener('not-media-route', this.hideMedia.bind(this));
 
         window.addEventListener('resize', this.windowResized.bind(this));
@@ -298,13 +304,89 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (this.editState === this.presentationState) {
             if (this.mediaType === 'video') {
               this.hideAnnotations = false;
-              this.createVideoJS();
+
+              if (app.config.webChimera) {
+                this.createVideo();
+              } else {
+                this.createVideoJS();
+              }
             } else if (this.mediaType === 'audio') {
               this.hideAnnotations = true;
               this.createAudioJS();
             }
           }
         }
+      },
+
+      // Create an instance of webChimera
+      createVideo: function() {
+
+        var $videoElement;
+
+        // If no video element yet created
+        if (!this.videoPlayer) {
+
+          // Create Video Element
+          $videoElement = document.createElement('div');
+          $videoElement.setAttribute('id', 'Video');
+          $videoElement.style.height = '100%';
+          $videoElement.style.width = '100%';
+
+          // Append new Video element
+          this.$.MediaAnnotations.querySelector('#ContentWrapper').appendChild($videoElement).removeAttribute('hidden');
+
+          // Show annotations element
+          this.$.MediaAnnotations.removeAttribute('hidden');
+
+          // Create WebChimera instance
+          this.videoPlayer = new app.webChimeraPlayer('#Video').addPlayer({
+            autoplay: false,
+            wcjs: app.webChimera
+          });
+
+        } else {
+          this.videoPlayer.clearPlaylist();
+        }
+
+        // Set Video Dimensions when Video has loaded up and in idle state
+        this.videoPlayer.onState(function(state) {
+
+          if (state === 'idle') {
+            this.setVideoPlayerDimensions();
+            this.resizeAnnotations();
+          }
+        }.bind(this));
+
+        // Set Video MRL
+        this.videoPlayer.addPlaylist('file:///' + app.config.paths.sourcePath + this.mediaObject['Linked File']);
+
+        // Override issues with WebChimera Video Player
+        this.initialiseWebChimeraPlayer();
+
+        // Show video
+        this.async(this.showMedia, 700);
+      },
+
+      // The default player starts with the Pause button showing and the Volume button not working.
+      // Override these issues
+      initialiseWebChimeraPlayer: function() {
+
+        var $pauseButton = this.querySelector('.wcp-pause');
+        var $playButton;
+
+        if ($pauseButton) {
+          $pauseButton.classList.remove('wcp-pause');
+          $pauseButton.classList.add('wcp-play');
+        }
+
+        $playButton = this.querySelector('.wcp-play');
+
+        $playButton.addEventListener('click', function() {
+          if ([0].indexOf(this.videoPlayer.vlc.state) > -1) {
+            this.videoPlayer.play().animatePause();
+          }
+        }.bind(this), false);
+
       },
 
       // Create a clean instance of videoJS on the video element
@@ -320,22 +402,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Set the src of the image if inside Electron
         if (appMode === 'app') {
-
-          this.webChimeraVideoPlayer = new app.webChimeraPlayer('#VideoCanvas').addPlayer({
-            autoplay: false,
-            wcjs: app.webChimera
-            // OR
-            // wcjs: require('webchimera.js')
-            // OR
-            // wcjs: require([path-to-Webchimera.js.node-file])
-          });
-
-          // AVI Player
-          this.webChimeraVideoPlayer.onLogMessage = function(level, message, format) {
-            console.log(message, format);
-          };
-
-          this.webChimeraVideoPlayer.addPlaylist('file:///Users/ODonnell/SITF/SITFSource/video/Silicon.Valley.S02E01.avi');
 
           // Use roles to determine if on network on offline
           if (presentationMode === 'online') {
@@ -643,7 +709,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var nameAndDescriptionHeight = 100;
         var headerHeight = 128;
-        var aspectRatio = this.videoPlayer.videoHeight() / this.videoPlayer.videoWidth();
+        var aspectRatio;
+
+        if (this.videoType === 'webChimera') {
+          aspectRatio = this.videoPlayer.height() / this.videoPlayer.width();
+        } else if (this.videoType === 'videoJS') {
+          aspectRatio = this.videoPlayer.videoHeight() / this.videoPlayer.videoWidth();
+        }
 
         // Container values
         var containerPaddingLeft = parseInt(getComputedStyle(this.$.MediaContent).getPropertyValue('padding-left'), 10);
@@ -741,7 +813,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Resize the Video and canvas to fit the viewable area
       resizeVideo: function() {
 
-        // Set the height or the width depending on the viewport aspect ratio
+        // WebChimera
+        if (this.videoType === 'webChimera') {
+          return;
+        }
+
+        // VideoJS - Set the height or the width depending on the viewport aspect ratio
         if (this.videoPlayerHeight) {
           this.videoPlayer.height(this.videoPlayerHeight);
         } else {
@@ -763,10 +840,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Resize the Annotations and canvas to fit the video
       resizeAnnotations: function() {
 
+        var videoHeight;
+        var videoWidth;
+        var $videoElement;
+
         if (this.videoPlayer) {
 
-          var videoHeight = this.videoPlayer.el().clientHeight;
-          var videoWidth = this.videoPlayer.el().clientWidth;
+          // WebChimera
+          if (this.videoType === 'webChimera') {
+            $videoElement = this.querySelector('#Video');
+            videoHeight = this.videoPlayerHeight;
+            videoWidth = this.videoPlayerWidth;
+          } else {
+            videoHeight = this.videoPlayer.el().clientHeight;
+            videoWidth = this.videoPlayer.el().clientWidth;
+          }
 
           this.$.MediaAnnotations.style.height = videoHeight + 'px';
           this.$.MediaAnnotations.style.width = videoWidth + 'px';
