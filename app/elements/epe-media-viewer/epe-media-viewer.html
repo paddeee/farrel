@@ -294,8 +294,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // to give the video a kick to resize properly
         document.addEventListener('webkitfullscreenchange', function() {
           if (this.querySelector('.wcp-maximize')) {
-            console.log('resize');
-            this.windowResized();
+
+            this.async(this.windowResized, 500);
+          }
+        }.bind(this));
+
+        // For when Chromium drops the prefixed event used above
+        document.addEventListener('fullscreenchange', function() {
+          if (this.querySelector('.wcp-maximize')) {
+
+            this.async(this.windowResized, 500);
           }
         }.bind(this));
       },
