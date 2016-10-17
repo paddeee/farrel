@@ -289,6 +289,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         $epeElement.addEventListener('not-media-route', this.hideMedia.bind(this));
 
         window.addEventListener('resize', this.windowResized.bind(this));
+
+        // Hook into Web Chimera Player changing full screen mode. If turning full screen off, call windowResized
+        // to give the video a kick to resize properly
+        document.addEventListener('webkitfullscreenchange', function() {
+          if (this.querySelector('.wcp-maximize')) {
+            console.log('resize');
+            this.windowResized();
+          }
+        }.bind(this));
       },
 
       // FIRED FROM OBSERVERS ON MEDIAOBJECT AND MEDIATYPE
