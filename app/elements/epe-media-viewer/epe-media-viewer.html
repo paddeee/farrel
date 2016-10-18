@@ -165,6 +165,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <!-- Annotations -->
+        <div class="media_button-holder border-right horizontal layout center end-justified" hidden$="[[hideAnnotations]]">
+          <paper-icon-button id="ControlMedia" icon="av:movie" on-tap="controlMedia"></paper-icon-button>
+        </div>
+
         <div class="media_button-holder border-left border-right horizontal layout center" hidden$="[[hideAnnotations]]">
           <paper-icon-button id="FreeDraw" icon="gesture" on-tap="freeDraw"></paper-icon-button>
           <paper-icon-button id="AddCircle" icon="image:panorama-fish-eye" on-tap="addCircle"></paper-icon-button>
@@ -175,6 +179,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <!-- paper-icon-buttons have an inherent padding that will push the tooltip down. offset undoes it -->
+        <paper-tooltip for="ControlMedia" position="top" offset="0">Control Video</paper-tooltip>
         <paper-tooltip for="ShowInfo" position="top" offset="0">Show Media Info</paper-tooltip>
         <paper-tooltip for="FreeDraw" position="top" offset="0">Free Draw</paper-tooltip>
         <paper-tooltip for="AddCircle" position="top" offset="0">Add Circle</paper-tooltip>
@@ -295,6 +300,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.addEventListener('webkitfullscreenchange', function() {
           if (this.querySelector('.wcp-maximize')) {
 
+            // Resize these properties so the annotations element picks up changes and will recalculate annotation
+            // canvas widths
+            this.annotationHeight = 0;
+            this.annotationWidth = 0;
+
             this.async(this.windowResized, 500);
           }
         }.bind(this));
@@ -378,6 +388,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             autoplay: false,
             wcjs: app.webChimera
           });
+
+          // Hide 'Buffering' text
+          this.videoPlayer.find('.wcp-status').css('display', 'none');
 
           // Set Video Dimensions when Video Info is ready
           this.videoPlayer.onFrameSetup(function() {
@@ -902,6 +915,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.MediaAnnotations.reset();
         this.$.MediaAnnotations.showEditor = false;
 
+        // Add selected class to selection button as default
+        this.manageSelectedButtonClass(this.$.ControlMedia);
+
         // Stop players
         if (this.audioPlayer) {
           this.audioPlayer.pause();
@@ -912,10 +928,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
+      // Return users control from annotations to video
+      controlMedia: function() {
+
+        // Enable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(false);
+
+        // Add selected class to button
+        this.manageSelectedButtonClass(event.currentTarget);
+      },
+
       // Free draw annotation
       freeDraw: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -926,7 +953,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Go into canvas selection mode
       selectAnnotations: function(event) {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -937,7 +965,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Add circle annotation
       addCircle: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -948,7 +977,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Add rectangle annotation
       addRect: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -959,7 +989,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Add text
       addText: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -970,7 +1001,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Add a line
       addLine: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -981,7 +1013,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Delete selected annotation
       deleteAnnotation: function() {
 
-        this.pointerEvents = true;
+        // Disable click to play or pause on WebChimera Video
+        this.disableClickToPlayPause(true);
 
         // Add selected class to button
         this.manageSelectedButtonClass(event.currentTarget);
@@ -1020,6 +1053,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Show associated source information
       showInfo: function() {
         this.$.RelatedItems.openDialog();
+      },
+
+      // Disable CLick to Play/Pause on webChimera video
+      disableClickToPlayPause: function(disable) {
+
+        if (disable) {
+
+          this.pointerEvents = true;
+
+          // Disable click to play/pause
+          if (app.config.webChimera) {
+            this.videoPlayer.find('.wcp-surface').css('z-index', '-1');
+          }
+        } else {
+
+          this.pointerEvents = false;
+
+          // Enable click to play/pause
+          if (app.config.webChimera) {
+            this.videoPlayer.find('.wcp-surface').css('z-index', '3');
+          }
+        }
       }
     });
   })();
