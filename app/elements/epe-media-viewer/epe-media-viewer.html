@@ -300,12 +300,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.addEventListener('webkitfullscreenchange', function() {
           if (this.querySelector('.wcp-maximize')) {
 
-            // Resize these properties so the annotations element picks up changes and will recalculate annotation
-            // canvas widths
-            this.annotationHeight = 0;
-            this.annotationWidth = 0;
-
-            this.async(this.windowResized, 500);
+            this.windowResized();
+            this.$.MediaAnnotations.setCanvasDimensions();
           }
         }.bind(this));
 
@@ -313,7 +309,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.addEventListener('fullscreenchange', function() {
           if (this.querySelector('.wcp-maximize')) {
 
-            this.async(this.windowResized, 500);
+            this.windowResized();
+            this.$.MediaAnnotations.setCanvasDimensions();
           }
         }.bind(this));
       },

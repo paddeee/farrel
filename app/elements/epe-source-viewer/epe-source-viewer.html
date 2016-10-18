@@ -127,6 +127,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               });
             } else {
 
+              // Reset items first to trigger changes to listeners
+              this.selectedSourceFileType = null;
+              this.selectedSourceObject = null;
+
               this.selectedSourceFileType = sourceData.selectedSourceFileType;
               this.selectedSourceObject = sourceData.selectedSourceObject;
 
