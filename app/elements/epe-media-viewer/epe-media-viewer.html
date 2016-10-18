@@ -350,7 +350,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Create an instance of webChimera
       createVideo: function() {
 
-        var $videoElement;
         var $audioContainer;
 
         // If audioPlayer exists, hide it
@@ -368,34 +367,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // If no video element yet created
         if (!this.videoPlayer) {
 
-          // Create Video Element
-          $videoElement = document.createElement('div');
-          $videoElement.setAttribute('id', 'Video');
-          $videoElement.style.height = '100%';
-          $videoElement.style.width = '100%';
-
-          // Append new Video element
-          this.$.MediaAnnotations.querySelector('#ContentWrapper').appendChild($videoElement);
-
-          // Show annotations element
-          this.$.MediaAnnotations.removeAttribute('hidden');
-
-          // Create WebChimera instance
-          this.videoPlayer = new app.webChimeraPlayer('#Video').addPlayer({
-            autoplay: false,
-            wcjs: app.webChimera
-          });
-
-          // Hide 'Buffering' text
-          this.videoPlayer.find('.wcp-status').css('display', 'none');
-
-          // Set Video Dimensions when Video Info is ready
-          this.videoPlayer.onFrameSetup(function() {
-            this.videoPlayer.time(0).pause();
-            this.setVideoPlayerDimensions();
-            this.resizeAnnotations();
-            this.showMedia();
-          }.bind(this));
+          // Initialise WebChimera Player
+          this.intialiseWebChimera();
 
         } else {
           this.videoPlayer.clearPlaylist();
@@ -407,6 +380,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Set Video MRL
         this.videoPlayer.addPlaylist('file:///' + app.config.paths.sourcePath + this.mediaObject['Linked File']);
         this.videoPlayer.play();
+      },
+
+      // Intialise WebChimera.js player
+      intialiseWebChimera: function() {
+
+        var $videoElement;
+
+        // Create Video Element
+        $videoElement = document.createElement('div');
+        $videoElement.setAttribute('id', 'Video');
+        $videoElement.style.height = '100%';
+        $videoElement.style.width = '100%';
+
+        // Append new Video element
+        this.$.MediaAnnotations.querySelector('#ContentWrapper').appendChild($videoElement);
+
+        // Show annotations element
+        this.$.MediaAnnotations.removeAttribute('hidden');
+
+        // Create WebChimera instance
+        this.videoPlayer = new app.webChimeraPlayer('#Video').addPlayer({
+          autoplay: false,
+          wcjs: app.webChimera
+        });
+
+        // Hide 'Buffering' text
+        this.videoPlayer.find('.wcp-status').css('display', 'none');
+
+        // Fix player's bug that hides volume control as soon as user tries to select it by overriding event code
+        this.videoPlayer.find('.wcp-vol-button').off('mouseenter mouseleave').hover(function() {
+          this.videoPlayer.find('.wcp-vol-control').animate({ width: 133 }, 200);
+        }.bind(this),function() {
+          if (this.videoPlayer.find('.wcp-vol-control').not(':hover').length > 0) {
+            this.videoPlayer.find('.wcp-vol-control').animate({ width: 0 }, 200);
+          }
+        }.bind(this));
+
+        this.videoPlayer.find('.wcp-vol-control').off('mouseout').mouseout(function() {
+          if (this.videoPlayer.find('.wcp-vol-button').not(':hover').length > 0 && this.videoPlayer.find('.wcp-vol-bar').not(':hover').length > 0 && this.videoPlayer.find('.wcp-vol-control').not(':hover').length > 0) {
+            this.videoPlayer.find('.wcp-vol-control').animate({ width: 0 }, 200);
+          }
+        }.bind(this));
+
+        // Set Video Dimensions when Video Info is ready
+        this.videoPlayer.onFrameSetup(function() {
+          this.videoPlayer.time(0).pause();
+          this.setVideoPlayerDimensions();
+          this.resizeAnnotations();
+          this.showMedia();
+        }.bind(this));
       },
 
       // Create a clean instance of videoJS on the video element
