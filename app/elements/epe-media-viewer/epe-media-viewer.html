@@ -570,7 +570,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             $mediaDescription.parentNode.appendChild($audioElement);
 
             this.async(function() {
-              $audioElement.parentNode.appendChild($avIcon);
+              if ($audioElement.parentNode) {
+                $audioElement.parentNode.appendChild($avIcon);
+              }
             });
           }
         } else {
@@ -583,7 +585,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           $avIcon.style.padding = '10%';
 
           this.async(function() {
-            $audioElement.parentNode.appendChild($avIcon);
+            if ($audioElement.parentNode) {
+              $audioElement.parentNode.appendChild($avIcon);
+            }
           });
         }
 

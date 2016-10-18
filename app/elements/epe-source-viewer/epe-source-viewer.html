@@ -113,10 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // When the source data is updated, update our grid data
         this.sourceStore.listen(function (sourceData) {
 
-          this.selectedSourceFileType = sourceData.selectedSourceFileType;
-          this.selectedSourceObject = sourceData.selectedSourceObject;
-
-          if (this.selectedSourceObject) {
+          if (sourceData.selectedSourceObject) {
 
             if (sourceData.message === 'invalidFileType') {
               this.fire('source-error', {
@@ -129,6 +126,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 sourceObject: sourceData
               });
             } else {
+
+              this.selectedSourceFileType = sourceData.selectedSourceFileType;
+              this.selectedSourceObject = sourceData.selectedSourceObject;
+
               this.fire('navigate-to-source-viewer', sourceData);
             }
           }
