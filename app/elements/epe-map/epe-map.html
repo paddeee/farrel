@@ -745,6 +745,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.config = global.config;
             this.setMapTilesSrc();
             this.createMapLegendArray();
+            if (presentationMode && presentationMode === 'offline') {
+              this.setUpLeafletDraw();
+            }
           }
         }.bind(this));
 
@@ -810,7 +813,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       // Set up Leaflet Draw
-      this.setUpLeafletDraw();
+      if (presentationMode && presentationMode === 'online') {
+        this.setUpLeafletDraw();
+      }
 
       // Set the max bounds
       this.setMaxBounds();
@@ -862,8 +867,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return;
       }
 
-      if (this.config.mapMetricMeasurement) {
-        mapMetricMeasurement= this.config.mapMetricMeasurement;
+      if (this.config && this.config.mapMetricMeasurement) {
+        if (this.config.mapMetricMeasurement === 'true') {
+          mapMetricMeasurement = true;
+        } else if (this.config.mapMetricMeasurement === 'false') {
+          mapMetricMeasurement = false;
+        }
       }
 
       //Initialize the StyleEditor
