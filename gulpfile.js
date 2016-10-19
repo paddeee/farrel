@@ -371,7 +371,9 @@ gulp.task('packager:osxpackagecreator', function () {
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': false,
+    'asar': {
+      unpackDir: 'node_modules/wcjs-prebuilt'
+    },
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFonline.ico.icns',
@@ -405,7 +407,9 @@ gulp.task('packager:osxpackageviewer', function () {
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': false,
+    'asar': {
+      unpackDir: 'node_modules/wcjs-prebuilt'
+    },
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFoffline.ico.icns',
@@ -438,7 +442,9 @@ gulp.task('packager:windowspackagecreator', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': true,
+    'asar': {
+      unpackDir: 'node_modules/wcjs-prebuilt'
+    },
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFonline.ico',
@@ -478,7 +484,9 @@ gulp.task('packager:windowspackageviewer', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': true,
+    'asar': {
+      unpackDir: 'node_modules/wcjs-prebuilt'
+    },
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFoffline.ico',
