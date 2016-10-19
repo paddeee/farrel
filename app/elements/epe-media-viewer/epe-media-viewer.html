@@ -279,13 +279,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           $epeElement = app.$.epeOffline;
         }
 
+        // Use videoJS for browser and WebChimera for App
         if (appMode === 'app') {
           this.fs = window.electronRequire('fs');
-        }
-
-        // Choose whether using webChimera or videoJS
-        // ToDO: Remove when webChimera has fully replaced videoJS
-        if (app.config.webChimera) {
           this.videoType = 'webChimera';
         } else {
           this.videoType = 'videoJS';
@@ -334,7 +330,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (this.mediaType === 'video') {
               this.hideAnnotations = false;
 
-              if (app.config.webChimera) {
+              if (this.videoType === 'webChimera') {
                 this.createVideo();
               } else {
                 this.createVideoJS();
@@ -377,8 +373,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.MediaAnnotations.removeAttribute('hidden');
         }
 
+        // Set the src of the image if inside Electron
+        if (appMode === 'app') {
+
+          // Use roles to determine if on network on offline
+          if (presentationMode === 'online') {
+            this.videoSource = 'file:///' + app.config.paths.sourcePath + this.mediaObject['Linked File'];
+          } else if (presentationMode === 'offline') {
+            this.videoSource = URL.createObjectURL(new Blob([this.mediaObject.blob]));
+          }
+        } else {
+          this.videoSource = '/sourcefiles/' + this.mediaObject['Linked File'];
+        }
+
         // Set Video MRL
-        this.videoPlayer.addPlaylist('file:///' + app.config.paths.sourcePath + this.mediaObject['Linked File']);
+        this.videoPlayer.addPlaylist(this.videoSource);
         this.videoPlayer.play();
       },
 
@@ -898,8 +907,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // WebChimera
           if (this.videoType === 'webChimera') {
-            videoHeight = this.videoPlayerHeight;
-            videoWidth = this.videoPlayerWidth;
+            videoHeight = Math.round(this.videoPlayerHeight);
+            videoWidth = Math.round(this.videoPlayerWidth);
           } else {
             videoHeight = this.videoPlayer.el().clientHeight;
             videoWidth = this.videoPlayer.el().clientWidth;
@@ -1083,7 +1092,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.pointerEvents = true;
 
           // Disable click to play/pause
-          if (app.config.webChimera) {
+          if (this.videoType === 'webChimera') {
             this.videoPlayer.find('.wcp-surface').css('z-index', '-1');
           }
         } else {
@@ -1091,7 +1100,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.pointerEvents = false;
 
           // Enable click to play/pause
-          if (app.config.webChimera) {
+          if (this.videoType === 'webChimera') {
             this.videoPlayer.find('.wcp-surface').css('z-index', '3');
           }
         }

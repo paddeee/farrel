@@ -405,7 +405,7 @@ gulp.task('packager:osxpackageviewer', function () {
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': true,
+    'asar': false,
     'arch': 'all',
     'dir': './dist',
     'icon': './icons/SITFoffline.ico.icns',
