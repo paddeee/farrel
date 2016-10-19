@@ -54,7 +54,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           presentation-state="[[presentationState]]"
           media-type="[[selectedSourceFileType]]"
           media-object="[[selectedSourceObject]]"
-          source-actions="[[sourceActions]]">
+          source-actions="[[sourceActions]]"
+          on-media-source-error="sourceFileError">
         </epe-media-viewer>
       </section>
 
@@ -116,14 +117,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (sourceData.selectedSourceObject) {
 
             if (sourceData.message === 'invalidFileType') {
-              this.fire('source-error', {
+
+              this.sourceFileError({
                 messageName: 'invalid-file-type',
-                sourceObject: sourceData
+                sourceObject: sourceData.selectedSourceObject
               });
             } else if (sourceData.message === 'fileDoesNotExist') {
-              this.fire('source-error', {
+
+              this.sourceFileError({
                 messageName: 'file-does-not-exist',
-                sourceObject: sourceData
+                sourceObject: sourceData.selectedSourceObject
               });
             } else {
 
@@ -139,6 +142,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }.bind(this));
       }
+    },
+
+    sourceFileError: function(error, detail) {
+
+      var errorObject = detail ? error.detail : error;
+      this.fire('source-error', errorObject);
     }
   });
 })();

@@ -439,6 +439,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.resizeAnnotations();
           this.showMedia();
         }.bind(this));
+
+        // Set the default sizes to be used for the Video Player
+        this.videoPlayer.onError(function() {
+
+          history.back();
+
+          this.fire('media-source-error', {
+            messageName: 'webchimera-error',
+            sourceObject: this.mediaObject
+          });
+        }.bind(this));
       },
 
       // Create a clean instance of videoJS on the video element
