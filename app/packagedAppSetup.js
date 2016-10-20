@@ -6,6 +6,7 @@ var ipcRenderer;
 var remote;
 var presentationMode;
 var appMode;
+var webChimera;
 
 if (typeof process === 'object') {
   appMode = 'app';
@@ -16,6 +17,7 @@ if (typeof process === 'object') {
 if (appMode === 'app') {
 
   remote = require('electron').remote;
+  webChimera = require(process.resourcesPath + '/wcjs-prebuilt/bin/WebChimera.js.node');
 
   config = remote.getGlobal('config');
   configPath = remote.getGlobal('appConfigPath');

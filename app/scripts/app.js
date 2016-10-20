@@ -37,10 +37,9 @@ var screenActions = require('./actions/screen.js');
 var screenStore = appMode === 'app' ? require('./stores/screen.js') : null;
 var mapGeoJsonStore = require('./stores/mapGeoJSON.js');
 var timeLineStore = require('./stores/timeLine.js');
-var webChimera = appMode === 'app' ? window.electronRequire('wcjs-prebuilt') : null;
 var webChimeraPlayer = appMode === 'app' ? window.electronRequire('wcjs-player') : null;
 
-(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimera, webChimeraPlayer) {
+(function(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimeraPlayer) {
   'use strict';
 
   // Grab a reference to our auto-binding template
@@ -83,7 +82,6 @@ var webChimeraPlayer = appMode === 'app' ? window.electronRequire('wcjs-player')
   app.sourceStore = sourceStore;
   app.mapGeoJsonStore = mapGeoJsonStore;
   app.timeLineStore = timeLineStore;
-  app.webChimera = webChimera;
   app.webChimeraPlayer = webChimeraPlayer;
 
   app.displayInstalledToast = function() {
@@ -128,4 +126,4 @@ var webChimeraPlayer = appMode === 'app' ? window.electronRequire('wcjs-player')
   // Maybe dangerous but can change for different approach if needed
   NodeList.prototype.forEach = Array.prototype.forEach;
 
-})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimera, webChimeraPlayer);
+})(document, reflux, moment, sourceActions, selectedRecordsActions, queryBuilderActions, queryBuilderStore, presentationsActions, userStore, presentationsStore, filterStateActions, filterStateStore, eventsStore, placesStore, peopleActions, peopleStore, sourceStore, dataSourceActions, importActions, importStore, exportActions, exportStore, mapGeoJsonStore, timeLineStore, importPackageActions, importPackageStore, screenActions, screenStore, loggingStore, webChimeraPlayer);

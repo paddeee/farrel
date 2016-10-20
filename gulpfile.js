@@ -21,7 +21,7 @@ var buffer = require('vinyl-buffer');
 var reload = browserSync.reload;
 var merge = require('merge-stream');
 var path = require('path');
-var fs = require('fs');
+var fsExtra = require('fs-extra');
 var glob = require('glob');
 var globby = require('globby');
 var mocha = require('gulp-mocha');
@@ -209,7 +209,67 @@ gulp.task('npm-install', function () {
 
   var npmInstallPromise = new Promise(function (resolve, reject) {
 
-    exec('cd dist && npm install wcjs-prebuilt && npm install', function (error, stdout, stderr) {
+    exec('cd dist && npm install', function (error, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  return npmInstallPromise;
+});
+
+gulp.task('npm-install', function () {
+
+  var npmInstallPromise = new Promise(function (resolve, reject) {
+
+    exec('cd dist && npm install', function (error, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  return npmInstallPromise;
+});
+
+gulp.task('npm-install-webchimera-osx', function () {
+
+  var npmInstallPromise = new Promise(function (resolve, reject) {
+
+    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=osx WCJS_RUNTIME_VERSION=v1.4.0 WCJS_VERSION=v0.2.6 npm install wcjs-prebuilt', function (error, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  return npmInstallPromise;
+});
+
+gulp.task('npm-install-webchimera-win', function () {
+
+  var npmInstallPromise = new Promise(function (resolve, reject) {
+
+    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=win WCJS_RUNTIME_VERSION=v1.4.0 WCJS_VERSION=v0.2.6 npm install wcjs-prebuilt', function (error, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
 
@@ -236,7 +296,7 @@ gulp.task('precache', function (callback) {
     } else {
       files.push('online.html', 'offline.html', './', 'bower_components/webcomponentsjs/webcomponents-lite.min.js');
       var filePath = path.join(dir, 'precache.json');
-      fs.writeFile(filePath, JSON.stringify(files), callback);
+      fsExtra.writeFile(filePath, JSON.stringify(files), callback);
     }
   });
 });
@@ -354,7 +414,7 @@ gulp.task('unit-tests', function () {
 });
 
 // Build Production Files, the Default Task
-gulp.task('default', ['clean'], function (cb) {
+gulp.task('default:osx', ['clean'], function (cb) {
   runSequence(
     'browserify',
     ['copy', 'styles'],
@@ -366,18 +426,28 @@ gulp.task('default', ['clean'], function (cb) {
     // Note: add , 'precache' , after 'vulcanize', if your are going to use Service Worker
 });
 
+// Build Production Files, the Default Task
+gulp.task('default:windows', ['clean'], function (cb) {
+  runSequence(
+    'browserify',
+    ['copy', 'styles'],
+    'elements',
+    ['jshint', 'images', 'fonts', 'html', /*'unit-tests'*/],
+    'npm-install',
+    //'vulcanize',
+    cb);
+  // Note: add , 'precache' , after 'vulcanize', if your are going to use Service Worker
+});
+
 gulp.task('packager:osxpackagecreator', function () {
 
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': false,
-    // ToDo: Get WebChimera working outside of asar
-    //'asar': {
-    //  unpackDir: '**/{node_modules/wcjs-prebuilt, node_modules/wcjs-player}/**/*'
-    //},
+    'asar': true,
     'arch': 'all',
     'dir': './dist',
+    'extra-resource': ['./dist/node_modules/wcjs-prebuilt','./appResources/networkConfig.json'],
     'icon': './icons/SITFonline.ico.icns',
     'name': 'EPEPackageCreator',
     'productName': 'EPE Package Creator',
@@ -395,7 +465,6 @@ gulp.task('packager:osxpackagecreator', function () {
         console.log(error);
         reject(error);
       } else {
-        console.log(appPaths);
         resolve(appPaths);
       }
     }.bind(this));
@@ -409,9 +478,10 @@ gulp.task('packager:osxpackageviewer', function () {
   var options = {
     'app-version': buildVersion,
     'app-category-type': 'public.app-category.business',
-    'asar': false,
+    'asar': true,
     'arch': 'all',
     'dir': './dist',
+    'extra-resource': ['./dist/node_modules/wcjs-prebuilt','./appResources/networkConfig.json'],
     'icon': './icons/SITFoffline.ico.icns',
     'name': 'EPEPackageViewer',
     'productName': 'EPE Package Viewer',
@@ -429,7 +499,6 @@ gulp.task('packager:osxpackageviewer', function () {
         console.log(error);
         reject(error);
       } else {
-        console.log(appPaths);
         resolve(appPaths);
       }
     }.bind(this));
@@ -442,8 +511,8 @@ gulp.task('packager:windowspackagecreator', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': false,
-    'arch': 'all',
+    'asar': true,
+    'arch': 'x64',
     'dir': './dist',
     'icon': './icons/SITFonline.ico',
     'name': 'EPEPackageCreator',
@@ -469,7 +538,17 @@ gulp.task('packager:windowspackagecreator', function () {
         console.log(error);
         reject(error);
       } else {
-        console.log(appPaths);
+
+        // Copy networkConfig.json to save doing this manually
+        gulp.src(['./appResources/networkConfig.json'])
+          .pipe(gulp.dest(appPaths + '/resources'))
+          .pipe($.size({title: 'webChimera'}));
+
+        // Copy WebChimera as it needs to live outside of asar file
+        gulp.src(['./dist/node_modules/wcjs-prebuilt/**/*'])
+          .pipe(gulp.dest(appPaths + '/resources/wcjs-prebuilt'))
+          .pipe($.size({title: 'webChimera'}));
+
         resolve(appPaths);
       }
     }.bind(this));
@@ -482,8 +561,8 @@ gulp.task('packager:windowspackageviewer', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': false,
-    'arch': 'all',
+    'asar': true,
+    'arch': 'x64',
     'dir': './dist',
     'icon': './icons/SITFoffline.ico',
     'name': 'EPEPackageViewer',
@@ -509,7 +588,17 @@ gulp.task('packager:windowspackageviewer', function () {
         console.log(error);
         reject(error);
       } else {
-        console.log(appPaths);
+
+        // Copy networkConfig.json to save doing this manually
+        gulp.src(['./appResources/networkConfig.json'])
+          .pipe(gulp.dest(appPaths + '/resources'))
+          .pipe($.size({title: 'webChimera'}));
+
+        // Copy WebChimera as it needs to live outside of asar file
+        gulp.src(['./dist/node_modules/wcjs-prebuilt/**/*'])
+          .pipe(gulp.dest(appPaths + '/resources/wcjs-prebuilt'))
+          .pipe($.size({title: 'webChimera'}));
+
         resolve(appPaths);
       }
     }.bind(this));
@@ -566,7 +655,8 @@ gulp.task('installer:windowspackageviewer', function () {
 
 gulp.task('build:osx', function (cb) {
   runSequence(
-    'default',
+    'default:osx',
+    'npm-install-webchimera-osx',
     'packager:osxpackagecreator',
     'packager:osxpackageviewer',
     cb);
@@ -574,11 +664,12 @@ gulp.task('build:osx', function (cb) {
 
 gulp.task('build:windows', function (cb) {
   runSequence(
-    'default',
+    'default:windows',
+    'npm-install-webchimera-win',
     'packager:windowspackagecreator',
     'packager:windowspackageviewer',
-    'installer:windowspackagecreator',
-    'installer:windowspackageviewer',
+    /*'installer:windowspackagecreator',
+    'installer:windowspackageviewer',*/
     cb);
 });
 

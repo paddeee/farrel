@@ -35,6 +35,7 @@
     "EpeCreatePackage": true,
     "EpeEditPackage": true,
     "roles": true,
-    "videojs": true
+    "videojs": true,
+    "webChimera": true
   }
 }
