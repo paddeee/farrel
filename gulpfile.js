@@ -34,8 +34,11 @@ var packager = require('electron-packager');
 var electronInstaller = require('electron-winstaller');
 var exec = require('child_process').exec;
 
-const buildVersion = '0.9.4';
-const electronVersion = '1.4.0';
+const buildVersion = '1.0.0';
+const electronOSXVersion = '1.4.3';
+const electronWindowsVersion = '1.3.5';
+const webChimeraOSXVersion = 'v0.2.7';
+const webChimeraWindowsVersion = 'v0.2.6';
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',
@@ -225,31 +228,11 @@ gulp.task('npm-install', function () {
   return npmInstallPromise;
 });
 
-gulp.task('npm-install', function () {
-
-  var npmInstallPromise = new Promise(function (resolve, reject) {
-
-    exec('cd dist && npm install', function (error, stdout, stderr) {
-      console.log(stdout);
-      console.log(stderr);
-
-      if (error) {
-        console.log(error);
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-
-  return npmInstallPromise;
-});
-
 gulp.task('npm-install-webchimera-osx', function () {
 
   var npmInstallPromise = new Promise(function (resolve, reject) {
 
-    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=osx WCJS_RUNTIME_VERSION=v1.4.0 WCJS_VERSION=v0.2.6 npm install wcjs-prebuilt', function (error, stdout, stderr) {
+    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=osx WCJS_RUNTIME_VERSION=v' + electronOSXVersion + ' WCJS_VERSION=' + webChimeraOSXVersion + ' npm install wcjs-prebuilt', function (error, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
 
@@ -269,7 +252,7 @@ gulp.task('npm-install-webchimera-win', function () {
 
   var npmInstallPromise = new Promise(function (resolve, reject) {
 
-    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=win WCJS_RUNTIME_VERSION=v1.4.0 WCJS_VERSION=v0.2.6 npm install wcjs-prebuilt', function (error, stdout, stderr) {
+    exec('cd dist && WCJS_RUNTIME=electron WCJS_ARCH=x64 WCJS_PLATFORM=win WCJS_RUNTIME_VERSION=v' + electronWindowsVersion + ' WCJS_VERSION=' + webChimeraWindowsVersion + ' npm install wcjs-prebuilt', function (error, stdout, stderr) {
       console.log(stdout);
       console.log(stderr);
 
@@ -454,7 +437,7 @@ gulp.task('packager:osxpackagecreator', function () {
     'out': '/Users/ODonnell/SITF/Builds',
     'overwrite': true,
     'platform': 'darwin',
-    'version': electronVersion
+    'version': electronOSXVersion
   };
 
   var taskPromise = new Promise(function (resolve, reject) {
@@ -488,7 +471,7 @@ gulp.task('packager:osxpackageviewer', function () {
     'out': '/Users/ODonnell/SITF/Builds',
     'overwrite': true,
     'platform': 'darwin',
-    'version': electronVersion
+    'version': electronOSXVersion
   };
 
   var taskPromise = new Promise(function (resolve, reject) {
@@ -511,7 +494,7 @@ gulp.task('packager:windowspackagecreator', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': true,
+    'asar': false,
     'arch': 'x64',
     'dir': './dist',
     'icon': './icons/SITFonline.ico',
@@ -520,7 +503,7 @@ gulp.task('packager:windowspackagecreator', function () {
     'out': '/Users/ODonnell/SITF/Builds',
     'overwrite': true,
     'platform': 'win32',
-    'version': electronVersion,
+    'version': electronWindowsVersion,
     'version-string': {
       'CompanyName': 'Evidential Ltd',
       'FileDescription': 'EPE Package Creator',
@@ -570,7 +553,7 @@ gulp.task('packager:windowspackageviewer', function () {
     'out': '/Users/ODonnell/SITF/Builds',
     'overwrite': true,
     'platform': 'win32',
-    'version': electronVersion,
+    'version': electronWindowsVersion,
     'version-string': {
       'CompanyName': 'Evidential Ltd',
       'FileDescription': 'EPE Package Viewer',
@@ -653,6 +636,42 @@ gulp.task('installer:windowspackageviewer', function () {
   });
 });
 
+gulp.task('build:osx-creator', function (cb) {
+  runSequence(
+    'default:osx',
+    'npm-install-webchimera-osx',
+    'packager:osxpackagecreator',
+    cb);
+});
+
+gulp.task('build:windows-creator', function (cb) {
+  runSequence(
+    'default:windows',
+    'npm-install-webchimera-win',
+    'packager:windowspackagecreator',
+    /*'installer:windowspackagecreator',
+    'installer:windowspackageviewer',*/
+    cb);
+});
+
+gulp.task('build:osx-viewer', function (cb) {
+  runSequence(
+    'default:osx',
+    'npm-install-webchimera-osx',
+    'packager:osxpackageviewer',
+    cb);
+});
+
+gulp.task('build:windows-viewer', function (cb) {
+  runSequence(
+    'default:windows',
+    'npm-install-webchimera-win',
+    'packager:windowspackageviewer',
+    /*'installer:windowspackagecreator',
+     'installer:windowspackageviewer',*/
+    cb);
+});
+
 gulp.task('build:osx', function (cb) {
   runSequence(
     'default:osx',
@@ -669,7 +688,7 @@ gulp.task('build:windows', function (cb) {
     'packager:windowspackagecreator',
     'packager:windowspackageviewer',
     /*'installer:windowspackagecreator',
-    'installer:windowspackageviewer',*/
+     'installer:windowspackageviewer',*/
     cb);
 });
 

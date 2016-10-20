@@ -432,6 +432,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }.bind(this));
 
+        // Log messages
+        this.videoPlayer.onLogMessage = function(level, message, format) {
+          console.log(message, format);
+        };
+
         // Set Video Dimensions when Video Info is ready
         this.videoPlayer.onFrameSetup(function() {
           this.videoPlayer.time(0).pause();
