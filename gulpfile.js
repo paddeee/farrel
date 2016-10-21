@@ -36,9 +36,9 @@ var exec = require('child_process').exec;
 
 const buildVersion = '1.0.0';
 const electronOSXVersion = '1.4.3';
-const electronWindowsVersion = '1.3.5';
+const electronWindowsVersion = '1.4.3';
 const webChimeraOSXVersion = 'v0.2.7';
-const webChimeraWindowsVersion = 'v0.2.6';
+const webChimeraWindowsVersion = 'v0.2.7';
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',
