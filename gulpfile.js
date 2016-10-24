@@ -527,11 +527,6 @@ gulp.task('packager:windowspackagecreator', function () {
           .pipe(gulp.dest(appPaths + '/resources'))
           .pipe($.size({title: 'webChimera'}));
 
-        // Copy WebChimera as it needs to live outside of asar file
-        gulp.src(['./dist/node_modules/wcjs-prebuilt/**/*'])
-          .pipe(gulp.dest(appPaths + '/resources/wcjs-prebuilt'))
-          .pipe($.size({title: 'webChimera'}));
-
         resolve(appPaths);
       }
     }.bind(this));
@@ -575,11 +570,6 @@ gulp.task('packager:windowspackageviewer', function () {
         // Copy networkConfig.json to save doing this manually
         gulp.src(['./appResources/networkConfig.json'])
           .pipe(gulp.dest(appPaths + '/resources'))
-          .pipe($.size({title: 'webChimera'}));
-
-        // Copy WebChimera as it needs to live outside of asar file
-        gulp.src(['./dist/node_modules/wcjs-prebuilt/**/*'])
-          .pipe(gulp.dest(appPaths + '/resources/wcjs-prebuilt'))
           .pipe($.size({title: 'webChimera'}));
 
         resolve(appPaths);
