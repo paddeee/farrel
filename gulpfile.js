@@ -494,7 +494,7 @@ gulp.task('packager:windowspackagecreator', function () {
 
   var options = {
     'app-version': buildVersion,
-    'asar': false,
+    'asar': true,
     'arch': 'x64',
     'dir': './dist',
     'icon': './icons/SITFonline.ico',
@@ -526,6 +526,13 @@ gulp.task('packager:windowspackagecreator', function () {
         gulp.src(['./appResources/networkConfig.json'])
           .pipe(gulp.dest(appPaths + '/resources'))
           .pipe($.size({title: 'webChimera'}));
+
+        // Copy WebChimera as it needs to live outside of asar file
+        fsExtra.copy('./dist/node_modules/wcjs-prebuilt', appPaths + '/resources/wcjs-prebuilt', function (err) {
+          if (err) {
+            reject(err);
+          }
+        });
 
         resolve(appPaths);
       }
@@ -571,6 +578,13 @@ gulp.task('packager:windowspackageviewer', function () {
         gulp.src(['./appResources/networkConfig.json'])
           .pipe(gulp.dest(appPaths + '/resources'))
           .pipe($.size({title: 'webChimera'}));
+
+        // Copy WebChimera as it needs to live outside of asar file
+        fsExtra.copy('./dist/node_modules/wcjs-prebuilt', appPaths + '/resources/wcjs-prebuilt', function (err) {
+          if (err) {
+            reject(err);
+          }
+        });
 
         resolve(appPaths);
       }

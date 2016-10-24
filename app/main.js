@@ -24,7 +24,7 @@ var publishWindow = null;
 
 // Fix for Windows version of WebChimera
 if (process.platform == 'win32') {
-  process.env['VLC_PLUGIN_PATH'] = path.join(__dirname, 'node_modules/wcjs-prebuilt/bin/plugins');
+  process.env['VLC_PLUGIN_PATH'] = path.join(process.resourcesPath, 'wcjs-prebuilt/bin/plugins');
 }
 
 // Handle Squirrel Events

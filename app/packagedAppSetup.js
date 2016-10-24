@@ -7,6 +7,7 @@ var remote;
 var presentationMode;
 var appMode;
 var webChimera;
+var path;
 
 if (typeof process === 'object') {
   appMode = 'app';
@@ -17,9 +18,10 @@ if (typeof process === 'object') {
 if (appMode === 'app') {
 
   remote = require('electron').remote;
+  path = require('path');
 
   if (process.platform == 'win32') {
-    webChimera = require('wcjs-prebuilt');
+    webChimera = require(path.join(process.resourcesPath, 'wcjs-prebuilt/bin/WebChimera.js.node'));
   } else {
     webChimera = require(process.resourcesPath + '/wcjs-prebuilt/bin/WebChimera.js.node');
   }
